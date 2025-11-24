@@ -1,40 +1,45 @@
 const socket = io();
 
-const introPage = document.getElementById('intro-page');
+// العناصر الموجودة في صفحة vote.html فقط
 const loginPage = document.getElementById('login-page');
 const votingPage = document.getElementById('voting-page');
 const adminPage = document.getElementById('admin-page');
 const usernameInput = document.getElementById('username');
+
+// تأكد من وجود العناصر قبل الوصول إليها
 const statusMsg = document.getElementById('status-msg');
 const buttonsGrid = document.querySelector('.buttons-grid');
 
 let currentUser = "";
 
-// 1. التنقل بين الصفحات
-function showLoginPage() {
-    introPage.classList.add('hidden');
-    loginPage.classList.remove('hidden');
-}
+// عند الدخول إلى vote.html
+document.addEventListener('DOMContentLoaded', () => {
+    // إخفاء أقسام التصويت والأدمن عند تحميل الصفحة
+    if (votingPage) votingPage.classList.add('hidden');
+    if (adminPage) adminPage.classList.add('hidden');
+});
 
 function login() {
     const name = usernameInput.value.trim();
-    if (!name) return alert("الرجاء إدخال الاسم");
+    if (!name || !loginPage) return alert("الرجاء إدخال الاسم.");
 
     currentUser = name;
     loginPage.classList.add('hidden');
 
     if (name === "1212") {
-        adminPage.classList.remove('hidden');
+        // الأدمن يذهب مباشرة للوحة التحكم
+        if(adminPage) adminPage.classList.remove('hidden');
     } else {
-        votingPage.classList.remove('hidden');
-        // التحقق مما إذا كان المستخدم قد صوت
+        // المستخدم العادي يذهب لصفحة التصويت
+        if(votingPage) votingPage.classList.remove('hidden');
+        
+        // التحقق مما إذا كان قد صوت سابقاً
         if (localStorage.getItem('hasVoted') === 'true') {
             showVotedState();
         }
     }
 }
 
-// 2. منطق التصويت
 function vote(animeName) {
     if (localStorage.getItem('hasVoted') === 'true') return;
 
@@ -43,46 +48,39 @@ function vote(animeName) {
     showVotedState();
 }
 
-// إخفاء الأزرار وإظهار رسالة الشكر وزر إعادة التصويت
 function showVotedState() {
-    buttonsGrid.classList.add('hidden');
-    statusMsg.classList.remove('hidden');
+    if (buttonsGrid) buttonsGrid.classList.add('hidden');
+    if (statusMsg) statusMsg.classList.remove('hidden');
 }
 
-// 3. إعادة التصويت (للمستخدم)
 function reVote() {
     if (confirm("هل تريد حذف صوتك السابق والتصويت من جديد؟")) {
-        // إبلاغ السيرفر بحذف الصوت
         socket.emit('retractVote', currentUser);
-        
-        // إعادة الواجهة للوضع الافتراضي
         localStorage.removeItem('hasVoted');
-        statusMsg.classList.add('hidden');
-        buttonsGrid.classList.remove('hidden');
+        if (statusMsg) statusMsg.classList.add('hidden');
+        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
     }
 }
 
-// --- منطق الأدمن ---
-
-// تصفير الكل
 function resetAll() {
     if (confirm("تحذير: هل أنت متأكد من تصفير جميع الأصوات؟")) {
         socket.emit('resetAllVotes');
     }
 }
 
-// حذف مستخدم محدد (يتم استدعاؤها عند الضغط على الاسم)
 function deleteUser(uName) {
     if (confirm(`هل تريد حذف صوت المستخدم: ${uName}؟`)) {
         socket.emit('deleteUserVote', uName);
     }
 }
 
-// --- استقبال تحديثات السيرفر ---
+// ------------------------------------------
+// منطق Socket.IO (لصفحة الأدمن)
+// ------------------------------------------
 
 socket.on('updateVotes', (votes) => {
-    // تحديث صفحة الأدمن فقط
-    if (currentUser !== "1212") return;
+    // يعمل فقط إذا كان المستخدم الحالي هو الأدمن
+    if (currentUser !== "1212" || !adminPage) return;
 
     const resultsContainer = document.getElementById('results-container');
     const totalVotesElem = document.getElementById('total-votes');
@@ -102,17 +100,15 @@ socket.on('updateVotes', (votes) => {
     sortedVotes.forEach(item => {
         const percentage = total > 0 ? (item.count / total) * 100 : 0;
         
-        // تحديد لون البار حسب الأنمي
         let barColor = '#ccc';
-        if(item.anime === 'Naruto') barColor = '#ffeb3b'; // أصفر
-        if(item.anime === 'One Piece') barColor = '#f44336'; // أحمر
-        if(item.anime === 'HXH') barColor = '#00ff00'; // أخضر
-        if(item.anime === 'Bleach') barColor = '#ff9800'; // برتقالي
+        if(item.anime === 'Naruto') barColor = '#ffeb3b';
+        if(item.anime === 'One Piece') barColor = '#f44336';
+        if(item.anime === 'HXH') barColor = '#00ff00';
+        if(item.anime === 'Bleach') barColor = '#ff9800';
 
         const card = document.createElement('div');
         card.className = 'result-card';
 
-        // إنشاء قائمة الأسماء القابلة للضغط
         let votersHtml = item.voters.map(v => 
             `<span class="voter-name" onclick="deleteUser('${v}')">${v}</span>`
         ).join(' ');
@@ -136,22 +132,20 @@ socket.on('updateVotes', (votes) => {
     });
 });
 
-// إذا قام الأدمن بتصفير الكل، نعيد المستخدمين للصفحة الأولى
 socket.on('forceResetLocal', () => {
     localStorage.removeItem('hasVoted');
     if (currentUser && currentUser !== "1212") {
-        statusMsg.classList.add('hidden');
-        buttonsGrid.classList.remove('hidden');
+        if (statusMsg) statusMsg.classList.add('hidden');
+        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
         alert("قام الأدمن بتصفير الأصوات، يمكنك التصويت مجدداً.");
     }
 });
 
-// إذا قام الأدمن بحذف صوت المستخدم الحالي
 socket.on('userVoteDeleted', (targetUser) => {
     if (currentUser === targetUser) {
         localStorage.removeItem('hasVoted');
-        statusMsg.classList.add('hidden');
-        buttonsGrid.classList.remove('hidden');
+        if (statusMsg) statusMsg.classList.add('hidden');
+        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
         alert("تم إلغاء تصويتك من قبل الإدارة، يمكنك التصويت مجدداً.");
     }
 });

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معلومات الفعالية</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="info-page" class="glass-effect info-container">
+        
+        <div class="sticky-header">
+            <a href="vote.html" class="action-btn pulse-animation">
+                انتقل إلى تصويت فعالية الغد ⬅
+            </a>
+        </div>
+
+        <div class="scroll-content">
+            <h1 class="main-title">فعالية Mini Squads</h1>
+            <p class="intro-text">
+                مرحباً بكم في فعالية <span>Mini Squads</span>. يهدف هذا الدليل إلى توضيح جميع التفاصيل المتعلقة بالفعالية، نظام المشاركة، وآلية اختيار اللاعبين.
+            </p>
+
+            <div class="section-divider"></div>
+
+            <h2>الفعاليات اليومية</h2>
+            <p>
+                ستقام في كل يوم <strong>3 إلى 4 فعاليات متنوعة</strong>، بالإضافة إلى لغز يومي في قناة إعلانات "فاندر لاند".
+                <br>
+                <small>ملاحظة: تتم الإجابة على اللغز داخل تذكرة الفريق في الوقت المحدد.</small>
+            </p>
+            <p>سيتم الإعلان عن أسماء الفعاليات ونوعها قبل بدايتها، فعلى كل فريق متابعة القناة.</p>
+
+            <div class="section-divider"></div>
+
+            <h2>قواعد المشاركة</h2>
+            <ul class="rules-list">
+                <li>يشارك كل لاعب في <strong>فعالية واحدة فقط</strong> يومياً.</li>
+                <li>يحدد قائد الفريق اللاعب المشارك في كل فعالية.</li>
+                <li>يتواصل القائد مع <strong>سامر</strong> لتأكيد الأسماء قبل البدء.</li>
+            </ul>
+
+            <div class="section-divider"></div>
+
+            <h2>الفرق المشاركة</h2>
+            <div class="teams-list-container" id="teams-list">
+                
+                <div class="item t-blue" onclick="toggleTeam(this)">
+                    <div class="team-header">
+                        <p class="item-text">فريق المعاصرين <span class="leader-name">(القائد: AMMAR)</span></p>
+                        <span class="toggle-icon">▶</span>
+                    </div>
+                    <ul class="team-members-list">
+                        <li class="member-item">عزوز</li>
+                        <li class="member-item">Dawd</li>
+                    </ul>
+                </div>
+
+                <div class="item t-red" onclick="toggleTeam(this)">
+                    <div class="team-header">
+                        <p class="item-text">فريق فندرة <span class="leader-name">(القائد: الجمهر)</span></p>
+                        <span class="toggle-icon">▶</span>
+                    </div>
+                    <ul class="team-members-list">
+                        <li class="member-item">𝒥𝑒𝓁𝑒</li>
+                        <li class="member-item">نذير</li>
+                    </ul>
+                </div>
+
+                <div class="item t-yellow" onclick="toggleTeam(this)">
+                    <div class="team-header">
+                        <p class="item-text">فريق المهرجين <span class="leader-name">(القائد: Bader)</span></p>
+                        <span class="toggle-icon">▶</span>
+                    </div>
+                    <ul class="team-members-list">
+                        <li class="member-item">Dev.Khaled</li>
+                        <li class="member-item">لاو</li>
+                    </ul>
+                </div>
+
+                <div class="item t-green" onclick="toggleTeam(this)">
+                    <div class="team-header">
+                        <p class="item-text">فريق حلتيته <span class="leader-name">(القائد: شمسو)</span></p>
+                        <span class="toggle-icon">▶</span>
+                    </div>
+                    <ul class="team-members-list">
+                        <li class="member-item">Doffy</li>
+                        <li class="member-item">Abdulrahman</li>
+                    </ul>
+                </div>
+
+                <div class="item t-gray" onclick="toggleTeam(this)">
+                    <div class="team-header">
+                        <p class="item-text">فريق نافذين البصيرة <span class="leader-name">(القائد: kazuo)</span></p>
+                        <span class="toggle-icon">▶</span>
+                    </div>
+                    <ul class="team-members-list">
+                        <li class="member-item">Waleed</li>
+                        <li class="member-item">Ahmad.G</li>
+                    </ul>
+                </div>
+
+            </div>
+            
+        </div>
+    </div>
+    <script>
+        function toggleTeam(element) {
+            const membersList = element.querySelector('.team-members-list');
+            const icon = element.querySelector('.toggle-icon');
+
+            // إغلاق كل القوائم المفتوحة باستثناء القائمة الحالية (Accordion behavior)
+            document.querySelectorAll('.item.selected').forEach(item => {
+                if (item !== element) {
+                    item.classList.remove('selected');
+                    item.querySelector('.team-members-list').classList.remove('open');
+                    item.querySelector('.toggle-icon').style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // فتح أو إغلاق القائمة الحالية
+            element.classList.toggle('selected');
+            membersList.classList.toggle('open');
+            
+            // تدوير السهم
+            if (membersList.classList.contains('open')) {
+                icon.style.transform = 'rotate(90deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التصويت والتحكم</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-page" class="container glass-effect">
+        <h1>مرحباً بك في التصويت</h1>
+        <input type="text" id="username" placeholder="أدخل اسمك هنا..." autocomplete="off">
+        <button onclick="login()" class="glass-button">دخول</button>
+        <a href="info.html" class="glass-button" style="margin-top:10px; display:block; text-decoration:none;">عودة للمعلومات</a>
+    </div>
+
+    <div id="voting-page" class="container glass-effect hidden">
+        <h2>اختر الأنمي المفضل لديك</h2>
+        <div class="buttons-grid vertical-grid">
+            <button class="vote-btn shadow-yellow" onclick="vote('Naruto')">Naruto</button>
+            <button class="vote-btn shadow-red" onclick="vote('One Piece')">One Piece</button>
+            <button class="vote-btn shadow-green" onclick="vote('HXH')">HXH</button>
+            <button class="vote-btn shadow-orange" onclick="vote('Bleach')">Bleach</button>
+        </div>
+        
+        <div id="status-msg" class="hidden">
+            <p>تم استلام صوتك بنجاح!</p>
+            <button onclick="reVote()" class="glass-button small-btn">إعادة التصويت ↻</button>
+        </div>
+    </div>
+
+    <div id="admin-page" class="container glass-effect hidden">
+        <div class="admin-header">
+            <h2>لوحة التحكم (Admin)</h2>
+            <button onclick="resetAll()" class="danger-btn">تصفير الكل 🗑️</button>
+        </div>
+        <div id="total-votes">إجمالي الأصوات: 0</div>
+        <p style="font-size:0.8rem;">اضغط على اسم المستخدم لحذف صوته</p>
+        <div id="results-container"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

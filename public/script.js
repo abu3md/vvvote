@@ -55,10 +55,10 @@ function disableButtons() {
     const btns = document.querySelectorAll('.vote-btn');
     btns.forEach(btn => {
         btn.disabled = true;
-        btn.style.opacity = "0.7"; // أقل شفافية ليعطي إحساس بالتعطيل
+        btn.style.opacity = "0.7";
         btn.style.cursor = "not-allowed";
-        btn.style.backgroundColor = "rgba(0, 188, 212, 0.1)"; // لون أزرق فاتح وشفاف جداً
-        btn.style.borderColor = "rgba(0, 188, 212, 0.2)"; // حدود باهتة
+        btn.style.backgroundColor = "rgba(0, 188, 212, 0.1)";
+        btn.style.borderColor = "rgba(0, 188, 212, 0.2)";
     });
 }
 
@@ -90,13 +90,12 @@ socket.on('updateVotes', (votes) => {
         const percentage = total > 0 ? (item.count / total) * 100 : 0;
         
         const card = document.createElement('div');
-        card.className = 'result-card glass-effect'; // إضافة تأثير Glass للكارد
+        card.className = 'result-card glass-effect';
         
-        // لون شريط التقدم موحد الآن
         let barColor = '#00bcd4'; 
 
         card.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <strong>${item.anime}</strong>
                 <span>${item.count} صوت (${percentage.toFixed(1)}%)</span>
             </div>
@@ -109,7 +108,6 @@ socket.on('updateVotes', (votes) => {
             </div>
         `;
 
-        // ميزة الضغط لإظهار الأسماء
         card.addEventListener('click', () => {
             const list = card.querySelector('.voters-list');
             list.style.display = list.style.display === 'block' ? 'none' : 'block';

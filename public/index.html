@@ -23,27 +23,26 @@
 
     <div id="voting-page" class="container glass-effect hidden">
         <h2>اختر الأنمي المفضل لديك</h2>
-        <p style="font-size: 0.8rem; color: #ccc;">ملاحظة: يمكنك التصويت مرة واحدة فقط.</p>
         <div class="buttons-grid vertical-grid">
-            <button class="vote-btn glass-button" onclick="vote('Naruto')">
-                <img src="assets/Naruto.png" alt="Naruto">
-            </button>
-            <button class="vote-btn glass-button" onclick="vote('One Piece')">
-                <img src="assets/One Piece.png" alt="One Piece">
-            </button>
-            <button class="vote-btn glass-button" onclick="vote('HXH')">
-                <img src="assets/HXH.png" alt="HXH">
-            </button>
-            <button class="vote-btn glass-button" onclick="vote('Bleach')">
-                <img src="assets/Bleach.png" alt="Bleach">
-            </button>
+            <button class="vote-btn glass-btn shadow-yellow" onclick="vote('Naruto')">Naruto</button>
+            <button class="vote-btn glass-btn shadow-red" onclick="vote('One Piece')">One Piece</button>
+            <button class="vote-btn glass-btn shadow-green" onclick="vote('HXH')">HXH</button>
+            <button class="vote-btn glass-btn shadow-orange" onclick="vote('Bleach')">Bleach</button>
         </div>
-        <div id="thank-you-msg" class="hidden">شكراً لتصويتك! تم استلام صوتك.</div>
+        
+        <div id="status-msg" class="hidden">
+            <p>تم استلام صوتك بنجاح!</p>
+            <button onclick="reVote()" class="glass-button small-btn">إعادة التصويت ↻</button>
+        </div>
     </div>
 
     <div id="admin-page" class="container glass-effect hidden">
-        <h2>لوحة التحكم (Admin)</h2>
+        <div class="admin-header">
+            <h2>لوحة التحكم (Admin)</h2>
+            <button onclick="resetAll()" class="danger-btn">تصفير الكل 🗑️</button>
+        </div>
         <div id="total-votes">إجمالي الأصوات: 0</div>
+        <p style="font-size:0.8rem; color:#ccc">اضغط على اسم المستخدم لحذف صوته</p>
         <div id="results-container">
             </div>
     </div>

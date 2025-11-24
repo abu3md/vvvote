@@ -1,0 +1,111 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #26102e; /* لون قائمة السؤال الجديد */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    text-align: center;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    width: 90%;
+    max-width: 500px;
+    backdrop-filter: blur(10px);
+}
+
+.hidden {
+    display: none;
+}
+
+input {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 70%;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+button {
+    cursor: pointer;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+    background-color: #4a4a4a;
+    transition: transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* أزرار التصويت */
+.buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.vote-btn {
+    padding: 20px;
+    font-size: 1.2rem;
+}
+
+/* ألوان الفرق حسب الطلب */
+.team1 {
+    background-color: #093e58; /* لون الفريق 1 */
+}
+
+.team1:hover { background-color: #0d567a; }
+
+.team2 {
+    background-color: #681212; /* لون الفريق 2 */
+}
+
+.team2:hover { background-color: #8a1818; }
+
+/* تصميم صفحة الأدمن */
+.result-card {
+    background: rgba(0,0,0,0.3);
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.result-card:hover {
+    border-color: #fff;
+}
+
+.voters-list {
+    display: none;
+    background: rgba(0,0,0,0.5);
+    padding: 5px;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #ddd;
+    text-align: right;
+}
+
+.bar-container {
+    background: #ccc;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    background: #4caf50;
+}

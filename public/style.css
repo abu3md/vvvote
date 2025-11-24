@@ -12,71 +12,127 @@ body {
     background-size: cover; /* تغطية الشاشة بالكامل */
     background-position: center; /* توسيط الصورة */
     background-repeat: no-repeat;
+    /* لجعل الصورة تمتد مع المحتوى ولا تتكرر عند التمرير */
+    background-attachment: fixed;
+    overflow: hidden; /* لمنع ظهور شريط التمرير إذا لم يكن هناك حاجة */
+}
+
+/* تأثير Glassmorphism */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.15); /* خلفية شفافة فاتحة */
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px); /* الضبابية هي المفتاح */
+    -webkit-backdrop-filter: blur(10px); /* لدعم المتصفحات القديمة */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* حدود شفافة */
 }
 
 .container {
-    background: rgba(0, 0, 0, 0.6); /* خلفية شفافة أغمق قليلاً مع اللون الجديد */
     padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.7);
     width: 90%;
     max-width: 500px;
-    backdrop-filter: blur(8px); /* تأثير ضبابي خفيف */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* حدود خفيفة */
+    margin: 20px; /* لضمان وجود مسافة حول الحاويات */
 }
 
-.full-screen {
-    max-width: none; /* للسماح لشاشة البداية بأخذ مساحة أكبر إذا أردت */
-    width: 100%;
-    height: 100vh; /* ملء الشاشة بالكامل */
+.hidden {
+    display: none !important;
+}
+
+/* شاشة البداية بتصميمها الجديد */
+.intro-layout {
+    position: relative; /* لتحديد موضع الزر داخلها */
+    width: 100vw; /* لتغطية عرض الشاشة بالكامل */
+    height: 100vh; /* لتغطية ارتفاع الشاشة بالكامل */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: transparent; /* شاشة البداية ليس لها خلفية شفافة خاصة بها */
-    box-shadow: none; /* إزالة الظل */
-    border: none; /* إزالة الحدود */
+    background: none; /* شاشة البداية ليس لها خلفية Glass خاصة بها */
+    box-shadow: none;
+    border: none;
     padding: 0;
 }
 
+.main-menu-img {
+    position: absolute; /* لتغطية الشاشة بالكامل كخلفية */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* تغطية الشاشة مع الحفاظ على نسبة الأبعاد */
+    z-index: 0; /* ليكون خلف الزر */
+}
 
-.hidden {
-    display: none !important; /* استخدام !important لضمان الإخفاء */
+.image-button {
+    position: absolute; /* تحديد موضع الزر داخل intro-page */
+    bottom: 10%; /* ارفع الزر من الأسفل */
+    left: 50%;
+    transform: translateX(-50%); /* توسيط الزر أفقياً */
+    z-index: 1; /* ليكون فوق الصورة الرئيسية */
+    background: none; /* إزالة خلفية الزر لظهور تأثير Glass عليه */
+    border: none;
+    padding: 0;
+    /* إضافة تأثير Glass للزر نفسه */
+    background: rgba(255, 255, 255, 0.1); /* خلفية شفافة للزر */
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-button img {
+    max-width: 180px; /* حجم زر next */
+    height: auto;
+    transition: transform 0.2s ease;
+    padding: 10px 20px; /* إضافة padding داخل الزر ليظهر تأثير Glass */
+    background: transparent; /* تأكد أن الصورة نفسها لا تخفي الـ glass effect */
+}
+
+.image-button:hover img {
+    transform: scale(1.08);
+}
+
+.image-button:active img {
+    transform: scale(0.98);
 }
 
 input {
     padding: 12px;
     border-radius: 8px;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
     width: 70%;
     margin-bottom: 15px;
     font-size: 1rem;
-    background-color: rgba(255, 255, 255, 0.2); /* لون حقل الإدخال */
+    background-color: rgba(255, 255, 255, 0.1); /* خلفية شفافة لل input */
     color: white;
     outline: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
 
-button {
+.glass-button {
     cursor: pointer;
     padding: 12px 25px;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 8px;
     font-weight: bold;
     color: white;
-    background-color: #2e366b; /* زر بلون متناسق مع الخلفية */
-    transition: background-color 0.2s ease, transform 0.1s;
+    background-color: rgba(255, 255, 255, 0.15); /* لون أساسي لأزرار Glass */
+    transition: background-color 0.2s ease, transform 0.1s, border-color 0.2s;
     font-size: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-button:hover {
-    background-color: #3f4a80;
+.glass-button:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
-button:active {
+.glass-button:active {
     transform: scale(0.98);
 }
 
@@ -91,38 +147,45 @@ button:active {
 .vote-btn {
     padding: 20px;
     font-size: 1.2rem;
-    background-color: #3b3f7f; /* لون موحد لأزرار التصويت */
+    /* ألوان الأزرار المتناسبة مع Glassmorphism */
+    background-color: rgba(0, 188, 212, 0.2); /* لون أزرق فاتح وشفاف */
+    border-color: rgba(0, 188, 212, 0.4);
 }
 .vote-btn:hover {
-    background-color: #4c529a;
+    background-color: rgba(0, 188, 212, 0.3);
+    border-color: rgba(0, 188, 212, 0.6);
 }
+
 
 /* تصميم صفحة الأدمن */
 .result-card {
     background: rgba(255, 255, 255, 0.1);
     margin: 10px 0;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 15px; /* زيادة المساحة الداخلية */
+    border-radius: 12px; /* حواف أكثر دائرية */
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     text-align: right; /* محاذاة النص لليمين */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, border-color 0.2s;
 }
 
 .result-card:hover {
-    border-color: #fff;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .voters-list {
     display: none;
     background: rgba(0,0,0,0.4);
-    padding: 8px;
-    margin-top: 8px;
-    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
     font-size: 0.85rem;
     color: #eee;
-    max-height: 150px; /* تحديد ارتفاع أقصى للقائمة */
-    overflow-y: auto; /* إضافة شريط تمرير إذا زادت الأسماء */
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .bar-container {
@@ -136,32 +199,4 @@ button:active {
     height: 100%;
     background: #00bcd4; /* لون جديد لشريط التقدم */
     transition: width 0.5s ease-out;
-}
-
-/* صور شاشة البداية */
-.main-menu-img {
-    max-width: 90%;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: 10px; /* لجعل الصورة تبدو أجمل */
-}
-
-.image-button {
-    background: none;
-    border: none;
-    padding: 0;
-}
-
-.image-button img {
-    max-width: 150px; /* حجم زر next */
-    height: auto;
-    transition: transform 0.2s ease;
-}
-
-.image-button:hover img {
-    transform: scale(1.05);
-}
-
-.image-button:active img {
-    transform: scale(0.95);
 }

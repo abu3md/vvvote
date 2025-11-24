@@ -1,6 +1,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #26102e; /* لون قائمة السؤال الجديد */
+    background-color: #04073d; /* اللون الرئيسي الجديد */
     color: white;
     display: flex;
     justify-content: center;
@@ -8,40 +8,72 @@ body {
     min-height: 100vh;
     margin: 0;
     text-align: center;
+    background-image: url('assets/back.png'); /* صورة الخلفية */
+    background-size: cover; /* تغطية الشاشة بالكامل */
+    background-position: center; /* توسيط الصورة */
+    background-repeat: no-repeat;
 }
 
 .container {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.6); /* خلفية شفافة أغمق قليلاً مع اللون الجديد */
     padding: 2rem;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.7);
     width: 90%;
     max-width: 500px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px); /* تأثير ضبابي خفيف */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* حدود خفيفة */
 }
 
+.full-screen {
+    max-width: none; /* للسماح لشاشة البداية بأخذ مساحة أكبر إذا أردت */
+    width: 100%;
+    height: 100vh; /* ملء الشاشة بالكامل */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: transparent; /* شاشة البداية ليس لها خلفية شفافة خاصة بها */
+    box-shadow: none; /* إزالة الظل */
+    border: none; /* إزالة الحدود */
+    padding: 0;
+}
+
+
 .hidden {
-    display: none;
+    display: none !important; /* استخدام !important لضمان الإخفاء */
 }
 
 input {
-    padding: 10px;
-    border-radius: 5px;
+    padding: 12px;
+    border-radius: 8px;
     border: none;
     width: 70%;
     margin-bottom: 15px;
     font-size: 1rem;
+    background-color: rgba(255, 255, 255, 0.2); /* لون حقل الإدخال */
+    color: white;
+    outline: none;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 button {
     cursor: pointer;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-weight: bold;
     color: white;
-    background-color: #4a4a4a;
-    transition: transform 0.1s;
+    background-color: #2e366b; /* زر بلون متناسق مع الخلفية */
+    transition: background-color 0.2s ease, transform 0.1s;
+    font-size: 1rem;
+}
+
+button:hover {
+    background-color: #3f4a80;
 }
 
 button:active {
@@ -59,53 +91,77 @@ button:active {
 .vote-btn {
     padding: 20px;
     font-size: 1.2rem;
+    background-color: #3b3f7f; /* لون موحد لأزرار التصويت */
 }
-
-/* ألوان الفرق حسب الطلب */
-.team1 {
-    background-color: #093e58; /* لون الفريق 1 */
+.vote-btn:hover {
+    background-color: #4c529a;
 }
-
-.team1:hover { background-color: #0d567a; }
-
-.team2 {
-    background-color: #681212; /* لون الفريق 2 */
-}
-
-.team2:hover { background-color: #8a1818; }
 
 /* تصميم صفحة الأدمن */
 .result-card {
-    background: rgba(0,0,0,0.3);
+    background: rgba(255, 255, 255, 0.1);
     margin: 10px 0;
     padding: 10px;
     border-radius: 8px;
     cursor: pointer;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: right; /* محاذاة النص لليمين */
 }
 
 .result-card:hover {
     border-color: #fff;
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .voters-list {
     display: none;
-    background: rgba(0,0,0,0.5);
-    padding: 5px;
-    margin-top: 5px;
-    font-size: 0.9rem;
-    color: #ddd;
-    text-align: right;
+    background: rgba(0,0,0,0.4);
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    color: #eee;
+    max-height: 150px; /* تحديد ارتفاع أقصى للقائمة */
+    overflow-y: auto; /* إضافة شريط تمرير إذا زادت الأسماء */
 }
 
 .bar-container {
-    background: #ccc;
-    height: 10px;
-    border-radius: 5px;
-    margin-top: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    height: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
     overflow: hidden;
 }
 .bar-fill {
     height: 100%;
-    background: #4caf50;
+    background: #00bcd4; /* لون جديد لشريط التقدم */
+    transition: width 0.5s ease-out;
+}
+
+/* صور شاشة البداية */
+.main-menu-img {
+    max-width: 90%;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 10px; /* لجعل الصورة تبدو أجمل */
+}
+
+.image-button {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.image-button img {
+    max-width: 150px; /* حجم زر next */
+    height: auto;
+    transition: transform 0.2s ease;
+}
+
+.image-button:hover img {
+    transform: scale(1.05);
+}
+
+.image-button:active img {
+    transform: scale(0.95);
 }

@@ -1,6 +1,7 @@
 const socket = io();
 
 // عناصر الصفحة
+const introPage = document.getElementById('intro-page'); // شاشة البداية الجديدة
 const loginPage = document.getElementById('login-page');
 const votingPage = document.getElementById('voting-page');
 const adminPage = document.getElementById('admin-page');
@@ -10,10 +11,10 @@ const buttonsGrid = document.querySelector('.buttons-grid');
 
 let currentUser = "";
 
-// عند فتح الموقع، تأكد إذا كان المستخدم قد صوت من قبل
-if (localStorage.getItem('hasVoted') === 'true') {
-    // إذا أردت منعه من الدخول تماماً، يمكنك فعل ذلك، 
-    // لكن هنا سنسمح له بالدخول ونعطل الأزرار فقط.
+// إظهار صفحة تسجيل الدخول عند الضغط على زر "Next"
+function showLoginPage() {
+    introPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
 }
 
 function login() {
@@ -56,6 +57,7 @@ function disableButtons() {
         btn.disabled = true;
         btn.style.opacity = "0.5";
         btn.style.cursor = "not-allowed";
+        btn.style.backgroundColor = "#5a5f9a"; // لون الأزرار المعطلة
     });
 }
 
@@ -89,8 +91,8 @@ socket.on('updateVotes', (votes) => {
         const card = document.createElement('div');
         card.className = 'result-card';
         
-        // تحديد لون البار بناءً على الفريق (جمالي فقط)
-        let barColor = (item.anime === 'Naruto' || item.anime === 'One Piece') ? '#093e58' : '#681212';
+        // لون شريط التقدم موحد الآن
+        let barColor = '#00bcd4'; 
 
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between;">

@@ -8,7 +8,14 @@
 </head>
 <body>
 
-    <div id="login-page" class="container">
+    <div id="intro-page" class="container full-screen">
+        <img src="assets/mainmenu.png" alt="Main Menu" class="main-menu-img">
+        <button id="next-button" onclick="showLoginPage()" class="image-button">
+            <img src="assets/next.png" alt="Next">
+        </button>
+    </div>
+
+    <div id="login-page" class="container hidden">
         <h1>مرحباً بك في التصويت</h1>
         <input type="text" id="username" placeholder="أدخل اسمك هنا..." autocomplete="off">
         <button onclick="login()">دخول</button>

@@ -8,15 +8,16 @@ body {
     min-height: 100vh;
     margin: 0;
     text-align: center;
+    /* الخلفية الثابتة للموقع كامل */
     background-image: url('assets/back.png');
-    background-size: cover; /* تغطية الشاشة بالكامل دون قص */
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed; /* لتثبيت الخلفية عند التمرير */
-    overflow: hidden; /* لمنع ظهور شريط التمرير الافتراضي */
+    background-attachment: fixed;
+    overflow: hidden;
 }
 
-/* تأثير Glassmorphism */
+/* التنسيق العام للحاويات (باستثناء شاشة البداية) */
 .glass-effect {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 16px;
@@ -30,72 +31,70 @@ body {
     padding: 2rem;
     width: 90%;
     max-width: 500px;
-    margin: 20px auto; /* توسيط الحاويات وإضافة هامش */
+    margin: 20px auto;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* شاشة البداية بتصميمها الجديد */
+/* --- تنسيق شاشة البداية الجديد --- */
 .intro-layout {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: none; /* لا خلفية Glass خاصة لشاشة البداية نفسها */
-    box-shadow: none;
-    border: none;
-    padding: 0;
-    overflow: hidden; /* لمنع الصورة من تجاوز حدود الصفحة */
-}
-
-.main-menu-img {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* تغطية الشاشة مع الحفاظ على نسبة الأبعاد */
-    z-index: 0;
+    display: flex;
+    flex-direction: column; /* ترتيب العناصر تحت بعض */
+    justify-content: center; /* توسيط عمودي */
+    align-items: center; /* توسيط أفقي */
+    z-index: 10;
+    /* لا توجد خلفية هنا لأن back.png في الـ body كافية */
 }
 
-.image-button {
-    position: absolute;
-    /* قم بتعديل هذا لرفع الزر أكثر */
-    bottom: 25%; /* رفع الزر ليظهر في منتصف الشاشة تقريباً */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    background: none;
-    border: none;
-    padding: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.image-button img {
-    max-width: 180px;
+.main-menu-logo {
+    /* جعل الصورة تأخذ حجم مناسب (نصف الشاشة تقريباً ككتلة) */
+    width: 80%;
+    max-width: 600px; /* لا تكبر جداً في الشاشات الكبيرة */
     height: auto;
-    transition: transform 0.2s ease;
-    padding: 10px 20px;
+    object-fit: contain;
+    
+    /* رفع الصورة للأعلى قليلاً */
+    margin-bottom: 20px;
+    transform: translateY(-50px); 
+    
+    /* تأثير ظل خفيف للصورة نفسها لتبدو بارزة 3D */
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+}
+
+/* زر نظيف تماماً بدون خلفية أو حدود */
+.clean-button {
     background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* حركة نطاطة خفيفة */
 }
 
-.image-button:hover img {
-    transform: scale(1.08);
+.clean-button img {
+    display: block;
+    width: 180px; /* حجم الزر */
+    height: auto;
+    /* ظل خفيف للصورة فقط */
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
 }
 
-.image-button:active img {
-    transform: scale(0.98);
+.clean-button:hover {
+    transform: scale(1.1); /* تكبير بسيط عند المرور */
 }
+
+.clean-button:active {
+    transform: scale(0.95); /* تصغير عند الضغط */
+}
+
+/* --- باقي التنسيقات (Inputs, Buttons, Cards) --- */
 
 input {
     padding: 12px;
@@ -122,56 +121,50 @@ input::placeholder {
     font-weight: bold;
     color: white;
     background-color: rgba(255, 255, 255, 0.15);
-    transition: background-color 0.2s ease, transform 0.1s, border-color 0.2s;
-    font-size: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, transform 0.1s;
 }
 
 .glass-button:hover {
     background-color: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .glass-button:active {
     transform: scale(0.98);
 }
 
-/* أزرار التصويت - الآن صور ومصفوفة عمودياً */
+/* تنسيق أزرار التصويت (الصور) العمودية */
 .buttons-grid {
-    display: flex; /* تغيير إلى flexbox */
-    flex-direction: column; /* ترتيب عمودي */
-    gap: 15px; /* المسافة بين الأزرار */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     margin-top: 20px;
+    align-items: center; /* توسيط الأزرار */
 }
 
 .vote-btn {
-    padding: 10px; /* تقليل padding لجعل الصورة تأخذ حيزها */
-    font-size: 1.2rem;
-    background-color: rgba(0, 188, 212, 0.2);
-    border-color: rgba(0, 188, 212, 0.4);
-    width: 100%; /* لجعل الأزرار تأخذ العرض الكامل */
-    max-width: 300px; /* لتحديد أقصى عرض للزر */
-    margin: 0 auto; /* توسيط الأزرار العمودية */
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05); /* خلفية خفيفة جداً */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    max-width: 300px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .vote-btn img {
-    width: 100%; /* لجعل الصورة تمتد داخل الزر */
+    width: 100%;
     height: auto;
-    display: block; /* إزالة أي مسافات إضافية حول الصورة */
-    border-radius: 8px; /* لجعل الصورة تبدو متناسقة مع حواف الزر */
+    display: block;
+    border-radius: 8px;
 }
 
 .vote-btn:hover {
-    background-color: rgba(0, 188, 212, 0.3);
-    border-color: rgba(0, 188, 212, 0.6);
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px); /* رفع الزر قليلاً */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-.vote-btn:active img {
-    transform: scale(0.98); /* تأثير ضغط على الصورة داخل الزر */
-}
-
-
-/* تصميم صفحة الأدمن */
+/* تنسيق صفحة الأدمن */
 .result-card {
     background: rgba(255, 255, 255, 0.1);
     margin: 10px 0;
@@ -180,13 +173,10 @@ input::placeholder {
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.3);
     text-align: right;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease, border-color 0.2s;
 }
 
 .result-card:hover {
     background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .voters-list {
@@ -199,7 +189,6 @@ input::placeholder {
     color: #eee;
     max-height: 150px;
     overflow-y: auto;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .bar-container {

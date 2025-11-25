@@ -1,151 +1,113 @@
-const socket = io();
+// (يفترض أن هذا هو ملف الخادم الذي يعمل مع Socket.io)
 
-// العناصر الموجودة في صفحة vote.html فقط
-const loginPage = document.getElementById('login-page');
-const votingPage = document.getElementById('voting-page');
-const adminPage = document.getElementById('admin-page');
-const usernameInput = document.getElementById('username');
+const fs = require('fs');
+const path = require('path');
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 
-// تأكد من وجود العناصر قبل الوصول إليها
-const statusMsg = document.getElementById('status-msg');
-const buttonsGrid = document.querySelector('.buttons-grid');
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-let currentUser = "";
+// 🆕 كلمة السر الجديدة
+const ADMIN_PASSWORD = 'Samer#1212';
+// مسار ملف حفظ البيانات
+const DATA_FILE = path.join(__dirname, 'votes.json');
 
-// عند الدخول إلى vote.html
-document.addEventListener('DOMContentLoaded', () => {
-    // إخفاء أقسام التصويت والأدمن عند تحميل الصفحة
-    if (votingPage) votingPage.classList.add('hidden');
-    if (adminPage) adminPage.classList.add('hidden');
-});
+let votes = {}; // متغير يحمل بيانات التصويت في الذاكرة
 
-function login() {
-    const name = usernameInput.value.trim();
-    if (!name || !loginPage) return alert("الرجاء إدخال الاسم.");
+// ----------------------------------------------------
+// 🆕 وظائف تأمين البيانات (Persistence Logic)
+// ----------------------------------------------------
 
-    currentUser = name;
-    loginPage.classList.add('hidden');
-
-    if (name === "1212") {
-        // الأدمن يذهب مباشرة للوحة التحكم
-        if(adminPage) adminPage.classList.remove('hidden');
-    } else {
-        // المستخدم العادي يذهب لصفحة التصويت
-        if(votingPage) votingPage.classList.remove('hidden');
-        
-        // التحقق مما إذا كان قد صوت سابقاً
-        if (localStorage.getItem('hasVoted') === 'true') {
-            showVotedState();
+// تحميل الأصوات من ملف votes.json عند بدء تشغيل الخادم
+function loadVotes() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = fs.readFileSync(DATA_FILE, 'utf8');
+            votes = JSON.parse(data);
+            console.log('Votes loaded from file successfully.');
+        } else {
+            console.log('votes.json file not found, starting with empty votes.');
+            votes = {};
         }
+    } catch (error) {
+        console.error('Error loading votes:', error);
+        votes = {};
     }
 }
 
-function vote(animeName) {
-    if (localStorage.getItem('hasVoted') === 'true') return;
-
-    socket.emit('castVote', { anime: animeName, user: currentUser });
-    localStorage.setItem('hasVoted', 'true');
-    showVotedState();
-}
-
-function showVotedState() {
-    if (buttonsGrid) buttonsGrid.classList.add('hidden');
-    if (statusMsg) statusMsg.classList.remove('hidden');
-}
-
-function reVote() {
-    if (confirm("هل تريد حذف صوتك السابق والتصويت من جديد؟")) {
-        socket.emit('retractVote', currentUser);
-        localStorage.removeItem('hasVoted');
-        if (statusMsg) statusMsg.classList.add('hidden');
-        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
+// حفظ الأصوات إلى ملف votes.json
+function saveVotes() {
+    try {
+        const data = JSON.stringify(votes, null, 2);
+        fs.writeFileSync(DATA_FILE, data, 'utf8');
+        console.log('Votes saved to file successfully.');
+    } catch (error) {
+        console.error('Error saving votes:', error);
     }
 }
 
-function resetAll() {
-    if (confirm("تحذير: هل أنت متأكد من تصفير جميع الأصوات؟")) {
-        socket.emit('resetAllVotes');
-    }
-}
+// تحميل البيانات عند بدء تشغيل الخادم
+loadVotes();
+// ----------------------------------------------------
 
-function deleteUser(uName) {
-    if (confirm(`هل تريد حذف صوت المستخدم: ${uName}؟`)) {
-        socket.emit('deleteUserVote', uName);
-    }
-}
 
-// ------------------------------------------
-// منطق Socket.IO (لصفحة الأدمن)
-// ------------------------------------------
+// يخدم ملفات العميل الثابتة
+app.use(express.static(path.join(__dirname, 'public')));
 
-socket.on('updateVotes', (votes) => {
-    // يعمل فقط إذا كان المستخدم الحالي هو الأدمن
-    if (currentUser !== "1212" || !adminPage) return;
+io.on('connection', (socket) => {
+    console.log('New client connected');
+    
+    // إرسال البيانات الحالية فور الاتصال
+    socket.emit('update_results', votes);
 
-    const resultsContainer = document.getElementById('results-container');
-    const totalVotesElem = document.getElementById('total-votes');
-    resultsContainer.innerHTML = '';
+    // معالجة تسجيل الدخول
+    socket.on('login', (data) => {
+        // ... (منطق تسجيل دخول المستخدم العادي يظل كما هو)
+    });
 
-    let total = 0;
-    let sortedVotes = [];
+    // معالجة التصويت الجديد
+    socket.on('new_vote', (data) => {
+        // ... (منطق التحقق والتصويت)
+        votes[data.username] = data.team;
+        io.emit('update_results', votes);
+        saveVotes(); // 🔑 حفظ البيانات بعد التصويت
+    });
 
-    for (const [anime, voters] of Object.entries(votes)) {
-        total += voters.length;
-        sortedVotes.push({ anime, voters, count: voters.length });
-    }
+    // 🆕 معالجة تسجيل دخول الأدمن
+    socket.on('admin_login', (data, callback) => {
+        // التحقق من كلمة السر الجديدة Samer#1212
+        if (data.password === ADMIN_PASSWORD) {
+            callback({ success: true, votes: votes });
+        } else {
+            callback({ success: false });
+        }
+    });
 
-    sortedVotes.sort((a, b) => b.count - a.count);
-    totalVotesElem.innerText = `إجمالي الأصوات: ${total}`;
+    // معالجة حذف صوت معين
+    socket.on('delete_vote', (usernameToDelete) => {
+        if (votes[usernameToDelete]) {
+            delete votes[usernameToDelete];
+            io.emit('update_results', votes);
+            saveVotes(); // 🔑 حفظ البيانات بعد الحذف
+        }
+    });
 
-    sortedVotes.forEach(item => {
-        const percentage = total > 0 ? (item.count / total) * 100 : 0;
-        
-        let barColor = '#ccc';
-        if(item.anime === 'Naruto') barColor = '#ffeb3b';
-        if(item.anime === 'One Piece') barColor = '#f44336';
-        if(item.anime === 'HXH') barColor = '#00ff00';
-        if(item.anime === 'Bleach') barColor = '#ff9800';
+    // معالجة تصفير جميع الأصوات
+    socket.on('reset_votes', () => {
+        votes = {};
+        io.emit('update_results', votes);
+        saveVotes(); // 🔑 حفظ البيانات بعد التصفير
+    });
 
-        const card = document.createElement('div');
-        card.className = 'result-card';
-
-        let votersHtml = item.voters.map(v => 
-            `<span class="voter-name" onclick="deleteUser('${v}')">${v}</span>`
-        ).join(' ');
-
-        if (item.voters.length === 0) votersHtml = '<span style="color:#777">لا يوجد مصوتون</span>';
-
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <strong style="color:${barColor}; font-size:1.1rem;">${item.anime}</strong>
-                <span>${item.count} (${percentage.toFixed(1)}%)</span>
-            </div>
-            <div class="bar-container" style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden;">
-                <div style="width: ${percentage}%; height:100%; background-color: ${barColor}; transition: width 0.5s;"></div>
-            </div>
-            <div style="margin-top:10px; font-size:0.85rem; text-align:right;">
-                <strong>المصوتون (اضغط للحذف):</strong><br>
-                <div style="margin-top:5px; line-height:1.6;">${votersHtml}</div>
-            </div>
-        `;
-        resultsContainer.appendChild(card);
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
     });
 });
 
-socket.on('forceResetLocal', () => {
-    localStorage.removeItem('hasVoted');
-    if (currentUser && currentUser !== "1212") {
-        if (statusMsg) statusMsg.classList.add('hidden');
-        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
-        alert("قام الأدمن بتصفير الأصوات، يمكنك التصويت مجدداً.");
-    }
-});
-
-socket.on('userVoteDeleted', (targetUser) => {
-    if (currentUser === targetUser) {
-        localStorage.removeItem('hasVoted');
-        if (statusMsg) statusMsg.classList.add('hidden');
-        if (buttonsGrid) buttonsGrid.classList.remove('hidden');
-        alert("تم إلغاء تصويتك من قبل الإدارة، يمكنك التصويت مجدداً.");
-    }
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

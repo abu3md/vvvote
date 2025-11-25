@@ -1,5 +1,30 @@
+/* ---------------------------------------------------- */
+/* 🆕 تعريف الخطوط المخصصة */
+/* ---------------------------------------------------- */
+/* الخط العربي: Lalezar */
+@font-face {
+    font-family: 'Lalezar';
+    src: url('assets/Lalezar-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* الخط الإنجليزي: Titan One */
+@font-face {
+    font-family: 'TitanOne';
+    src: url('assets/TitanOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ---------------------------------------------------- */
+/* تطبيق الخطوط */
+/* ---------------------------------------------------- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* تطبيق الخط العربي كخط أساسي للموقع بالكامل */
+    font-family: 'Lalezar', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #04073d;
     color: white;
     display: flex;
@@ -16,6 +41,20 @@ body {
     background-attachment: fixed;
     overflow-x: hidden;
 }
+
+/* تطبيق الخط الإنجليزي على العناصر التي تحتوي على نصوص إنجليزية بارزة (مثل أسماء الأنمي) */
+.vote-btn, .main-title, .action-btn {
+    font-family: 'TitanOne', sans-serif;
+}
+
+/* تطبيق الخط الإنجليزي على المدخلات */
+input {
+    font-family: 'TitanOne', 'Lalezar', sans-serif;
+    padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);
+    width: 70%; margin-bottom: 15px; background: rgba(255,255,255,0.1);
+    color: white; outline: none; text-align: center;
+}
+
 
 .hidden { display: none !important; }
 
@@ -119,6 +158,7 @@ body {
     top: 0;
     z-index: 5;
 }
+
 
 .action-btn {
     width: 100%; padding: 15px; font-size: 1.2rem; font-weight: bold;
@@ -288,11 +328,6 @@ h2 {
 }
 .glass-button:hover { background: rgba(255,255,255,0.3); }
 
-input {
-    padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);
-    width: 70%; margin-bottom: 15px; background: rgba(255,255,255,0.1);
-    color: white; outline: none; text-align: center;
-}
 
 /* أزرار التصويت */
 .buttons-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }

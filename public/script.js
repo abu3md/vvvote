@@ -1,93 +1,169 @@
-// (ملف الخادم - script.js)
+// (كود الواجهة الأمامية - public/script.js)
 
-const fs = require('fs');
-const path = require('path');
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+// إعداد اتصال Socket.io
+// 🔑 يجب التأكد من أن ملف socket.io.js مُضمَّن في HTML: <script src="/socket.io/socket.io.js"></script>
+const socket = io(); 
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-
-// 🔑 كلمة السر الجديدة
-const ADMIN_PASSWORD = 'Samer#1212';
-// مسار ملف حفظ البيانات
-const DATA_FILE = path.join(__dirname, 'votes.json');
-
-let votes = {}; // متغير يحمل بيانات التصويت في الذاكرة
-
-// وظائف تأمين البيانات (Persistence Logic)
-function loadVotes() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            votes = JSON.parse(data);
-            console.log('Votes loaded from file successfully.');
-        } else {
-            console.log('votes.json file not found, starting with empty votes.');
-            votes = {};
-        }
-    } catch (error) {
-        console.error('Error loading votes:', error);
-        votes = {};
-    }
-}
-
-function saveVotes() {
-    try {
-        const data = JSON.stringify(votes, null, 2);
-        fs.writeFileSync(DATA_FILE, data, 'utf8');
-        console.log('Votes saved to file successfully.');
-    } catch (error) {
-        console.error('Error saving votes:', error);
-    }
-}
-
-loadVotes();
-
-// يخدم ملفات العميل الثابتة
-app.use(express.static(path.join(__dirname, 'public')));
-
-io.on('connection', (socket) => {
-    console.log('New client connected');
+// ------------------------------------------------------------------
+// وظيفة الدخول (المستخدم العادي والأدمن)
+// ------------------------------------------------------------------
+function login() {
+    // جلب العناصر الأساسية
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('admin-password'); 
+    const loginPage = document.getElementById('login-page');
+    const votingPage = document.getElementById('voting-page');
+    const adminPage = document.getElementById('admin-page');
     
-    socket.emit('update_results', votes);
+    // جلب القيم
+    const username = usernameInput.value.trim();
+    // التأكد من قراءة كلمة السر إذا كان الحقل موجوداً
+    const password = passwordInput ? passwordInput.value.trim() : ''; 
 
-    socket.on('new_vote', (data) => {
-        votes[data.username] = data.team;
-        io.emit('update_results', votes);
-        saveVotes(); 
-    });
+    if (!username) {
+        alert('الرجاء إدخال اسم المستخدم.');
+        return;
+    }
 
-    socket.on('admin_login', (data, callback) => {
-        if (data.password === ADMIN_PASSWORD) {
-            callback({ success: true, votes: votes });
-        } else {
-            callback({ success: false });
-        }
-    });
+    // 1. حالة الأدمن (التحقق من كلمة السر عبر الخادم)
+    if (username.toLowerCase() === 'admin') {
+        
+        socket.emit('admin_login', { username: username, password: password }, (response) => {
+            if (response.success) {
+                // النجاح: إظهار لوحة الأدمن
+                loginPage.classList.add('hidden');
+                votingPage.classList.add('hidden'); 
+                adminPage.classList.remove('hidden');
+                updateAdminResults(response.votes); // تحديث النتائج فوراً
+            } else {
+                alert('كلمة السر غير صحيحة للإدمن! (تذكر: Samer#1212)');
+            }
+        });
+        return; 
+    }
 
-    socket.on('delete_vote', (usernameToDelete) => {
-        if (votes[usernameToDelete]) {
-            delete votes[usernameToDelete];
-            io.emit('update_results', votes);
-            saveVotes(); 
-        }
-    });
+    // 2. حالة المستخدم العادي (الدخول مباشرةً)
+    
+    // حفظ اسم المستخدم محليًا
+    localStorage.setItem('currentUsername', username);
+    
+    // إخفاء صفحة الدخول وإظهار صفحة التصويت
+    loginPage.classList.add('hidden');
+    adminPage.classList.add('hidden'); 
+    votingPage.classList.remove('hidden');
+}
 
-    socket.on('reset_votes', () => {
-        votes = {};
-        io.emit('update_results', votes);
-        saveVotes(); 
-    });
+// ------------------------------------------------------------------
+// وظيفة التصويت
+// ------------------------------------------------------------------
+function vote(team) {
+    const username = localStorage.getItem('currentUsername');
+    if (!username) {
+        alert('الرجاء تسجيل الدخول أولاً.');
+        document.getElementById('login-page').classList.remove('hidden');
+        document.getElementById('voting-page').classList.add('hidden');
+        return;
+    }
 
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
+    // إرسال التصويت إلى الخادم
+    socket.emit('new_vote', { username: username, team: team });
+
+    // إخفاء أزرار التصويت وعرض رسالة الحالة
+    // 🔑 يجب أن يحتوي vote.html على عنصر id="buttons-grid" و id="status-msg"
+    document.querySelector('.buttons-grid').classList.add('hidden');
+    document.getElementById('status-msg').classList.remove('hidden');
+}
+
+// ------------------------------------------------------------------
+// وظيفة إعادة التصويت (إذا سمحت الإدارة)
+// ------------------------------------------------------------------
+function reVote() {
+    document.querySelector('.buttons-grid').classList.remove('hidden');
+    document.getElementById('status-msg').classList.add('hidden');
+}
+
+// ------------------------------------------------------------------
+// وظائف الأدمن
+// ------------------------------------------------------------------
+
+function resetAll() {
+    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟ لا يمكن التراجع عن هذا الإجراء.")) {
+        socket.emit('reset_votes');
+    }
+}
+
+function deleteVote(username) {
+    if (confirm(`هل أنت متأكد من حذف تصويت المستخدم: ${username}؟`)) {
+        socket.emit('delete_vote', username);
+    }
+}
+
+// ------------------------------------------------------------------
+// معالجة البيانات القادمة من الخادم
+// ------------------------------------------------------------------
+socket.on('connect', () => {
+    console.log('Connected to server via Socket.IO');
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+socket.on('update_results', (votes) => {
+    // تحديث النتائج في لوحة الأدمن (إذا كانت مفتوحة)
+    if (!document.getElementById('admin-page').classList.contains('hidden')) {
+        updateAdminResults(votes);
+    }
+});
+
+// وظيفة تحديث عرض النتائج في لوحة الأدمن
+function updateAdminResults(votes) {
+    const resultsContainer = document.getElementById('results-container');
+    const totalVotesElement = document.getElementById('total-votes');
+    resultsContainer.innerHTML = '';
+    
+    const teamCounts = {};
+    const totalCount = Object.keys(votes).length;
+
+    totalVotesElement.textContent = `إجمالي الأصوات: ${totalCount}`;
+
+    // 1. فرز الأصوات حسب الفريق
+    for (const user in votes) {
+        const team = votes[user];
+        if (!teamCounts[team]) {
+            teamCounts[team] = { count: 0, voters: [] };
+        }
+        teamCounts[team].count++;
+        teamCounts[team].voters.push(user);
+    }
+
+    // 2. عرض النتائج
+    for (const team in teamCounts) {
+        const data = teamCounts[team];
+        const percentage = totalCount > 0 ? (data.count / totalCount) * 100 : 0;
+
+        const resultCard = document.createElement('div');
+        resultCard.className = 'result-card';
+        resultCard.innerHTML = `
+            <h3>${team} (${data.count} أصوات)</h3>
+            <div class="bar-container" style="margin-bottom: 10px;">
+                <div style="width: ${percentage}%; background-color: #ffd700; height: 100%; border-radius: 4px;"></div>
+            </div>
+            <div class="voters-list" style="text-align: right;">
+                ${data.voters.map(user => 
+                    `<span class="voter-name" onclick="deleteVote('${user}')">${user}</span>`
+                ).join('')}
+            </div>
+        `;
+        resultsContainer.appendChild(resultCard);
+    }
+}
+
+// ------------------------------------------------------------------
+// تهيئة عند تحميل الصفحة
+// ------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const username = localStorage.getItem('currentUsername');
+    
+    // إذا كان هناك اسم مستخدم محفوظ وليس admin، نقله لصفحة التصويت
+    if (username && username.toLowerCase() !== 'admin') {
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('voting-page').classList.remove('hidden');
+    }
 });

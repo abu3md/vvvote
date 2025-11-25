@@ -1,4 +1,4 @@
-// (يفترض أن هذا هو ملف الخادم الذي يعمل مع Socket.io)
+// (ملف الخادم - script.js)
 
 const fs = require('fs');
 const path = require('path');
@@ -17,11 +17,7 @@ const DATA_FILE = path.join(__dirname, 'votes.json');
 
 let votes = {}; // متغير يحمل بيانات التصويت في الذاكرة
 
-// ----------------------------------------------------
 // وظائف تأمين البيانات (Persistence Logic)
-// ----------------------------------------------------
-
-// تحميل الأصوات من ملف votes.json عند بدء تشغيل الخادم
 function loadVotes() {
     try {
         if (fs.existsSync(DATA_FILE)) {
@@ -38,7 +34,6 @@ function loadVotes() {
     }
 }
 
-// حفظ الأصوات إلى ملف votes.json
 function saveVotes() {
     try {
         const data = JSON.stringify(votes, null, 2);
@@ -49,10 +44,7 @@ function saveVotes() {
     }
 }
 
-// تحميل البيانات عند بدء تشغيل الخادم
 loadVotes();
-// ----------------------------------------------------
-
 
 // يخدم ملفات العميل الثابتة
 app.use(express.static(path.join(__dirname, 'public')));
@@ -60,20 +52,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 io.on('connection', (socket) => {
     console.log('New client connected');
     
-    // إرسال البيانات الحالية فور الاتصال
     socket.emit('update_results', votes);
 
-    // معالجة تسجيل دخول المستخدم العادي (بدون كلمة سر)
     socket.on('new_vote', (data) => {
-        // ... (منطق التحقق والتصويت)
         votes[data.username] = data.team;
         io.emit('update_results', votes);
-        saveVotes(); // حفظ البيانات بعد التصويت
+        saveVotes(); 
     });
 
-    // معالجة تسجيل دخول الأدمن
     socket.on('admin_login', (data, callback) => {
-        // التحقق من كلمة السر الجديدة Samer#1212
         if (data.password === ADMIN_PASSWORD) {
             callback({ success: true, votes: votes });
         } else {
@@ -81,20 +68,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    // معالجة حذف صوت معين
     socket.on('delete_vote', (usernameToDelete) => {
         if (votes[usernameToDelete]) {
             delete votes[usernameToDelete];
             io.emit('update_results', votes);
-            saveVotes(); // حفظ البيانات بعد الحذف
+            saveVotes(); 
         }
     });
 
-    // معالجة تصفير جميع الأصوات
     socket.on('reset_votes', () => {
         votes = {};
         io.emit('update_results', votes);
-        saveVotes(); // حفظ البيانات بعد التصفير
+        saveVotes(); 
     });
 
     socket.on('disconnect', () => {

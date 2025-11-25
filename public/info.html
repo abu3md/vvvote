@@ -47,11 +47,11 @@
                 
                 <div class="item t-blue" onclick="toggleTeam(this)">
                     <div class="team-header">
-                        <p class="item-text">فريق المعاصرين <span class="leader-name">(القائد: AMMAR)</span></p>
+                        <p class="item-text">فريق المعاصرين <span class="leader-name">(القائد: عزوز)</span></p>
                         <span class="toggle-icon">▶</span>
                     </div>
                     <ul class="team-members-list">
-                        <li class="member-item">عزوز</li>
+                        <li class="member-item">اقاتسو</li>
                         <li class="member-item">Dawd</li>
                     </ul>
                 </div>
@@ -80,12 +80,12 @@
 
                 <div class="item t-green" onclick="toggleTeam(this)">
                     <div class="team-header">
-                        <p class="item-text">فريق حلتيته <span class="leader-name">(القائد: شمسو)</span></p>
+                        <p class="item-text">فريق العناكب <span class="leader-name">(القائد: الحكومه)</span></p>
                         <span class="toggle-icon">▶</span>
                     </div>
                     <ul class="team-members-list">
                         <li class="member-item">Doffy</li>
-                        <li class="member-item">Abdulrahman</li>
+                        <li class="member-item">red0</li>
                     </ul>
                 </div>
 
@@ -109,7 +109,6 @@
             const membersList = element.querySelector('.team-members-list');
             const icon = element.querySelector('.toggle-icon');
 
-            // إغلاق كل القوائم المفتوحة باستثناء القائمة الحالية (Accordion behavior)
             document.querySelectorAll('.item.selected').forEach(item => {
                 if (item !== element) {
                     item.classList.remove('selected');
@@ -118,11 +117,9 @@
                 }
             });
 
-            // فتح أو إغلاق القائمة الحالية
             element.classList.toggle('selected');
             membersList.classList.toggle('open');
             
-            // تدوير السهم
             if (membersList.classList.contains('open')) {
                 icon.style.transform = 'rotate(90deg)';
             } else {

@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// 🆕 كلمة السر الجديدة
+// 🔑 كلمة السر الجديدة
 const ADMIN_PASSWORD = 'Samer#1212';
 // مسار ملف حفظ البيانات
 const DATA_FILE = path.join(__dirname, 'votes.json');
@@ -18,7 +18,7 @@ const DATA_FILE = path.join(__dirname, 'votes.json');
 let votes = {}; // متغير يحمل بيانات التصويت في الذاكرة
 
 // ----------------------------------------------------
-// 🆕 وظائف تأمين البيانات (Persistence Logic)
+// وظائف تأمين البيانات (Persistence Logic)
 // ----------------------------------------------------
 
 // تحميل الأصوات من ملف votes.json عند بدء تشغيل الخادم
@@ -63,20 +63,15 @@ io.on('connection', (socket) => {
     // إرسال البيانات الحالية فور الاتصال
     socket.emit('update_results', votes);
 
-    // معالجة تسجيل الدخول
-    socket.on('login', (data) => {
-        // ... (منطق تسجيل دخول المستخدم العادي يظل كما هو)
-    });
-
-    // معالجة التصويت الجديد
+    // معالجة تسجيل دخول المستخدم العادي (بدون كلمة سر)
     socket.on('new_vote', (data) => {
         // ... (منطق التحقق والتصويت)
         votes[data.username] = data.team;
         io.emit('update_results', votes);
-        saveVotes(); // 🔑 حفظ البيانات بعد التصويت
+        saveVotes(); // حفظ البيانات بعد التصويت
     });
 
-    // 🆕 معالجة تسجيل دخول الأدمن
+    // معالجة تسجيل دخول الأدمن
     socket.on('admin_login', (data, callback) => {
         // التحقق من كلمة السر الجديدة Samer#1212
         if (data.password === ADMIN_PASSWORD) {
@@ -91,7 +86,7 @@ io.on('connection', (socket) => {
         if (votes[usernameToDelete]) {
             delete votes[usernameToDelete];
             io.emit('update_results', votes);
-            saveVotes(); // 🔑 حفظ البيانات بعد الحذف
+            saveVotes(); // حفظ البيانات بعد الحذف
         }
     });
 
@@ -99,7 +94,7 @@ io.on('connection', (socket) => {
     socket.on('reset_votes', () => {
         votes = {};
         io.emit('update_results', votes);
-        saveVotes(); // 🔑 حفظ البيانات بعد التصفير
+        saveVotes(); // حفظ البيانات بعد التصفير
     });
 
     socket.on('disconnect', () => {

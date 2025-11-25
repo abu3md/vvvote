@@ -10,13 +10,17 @@
 
     <div id="login-page" class="container glass-effect">
         <h1>مرحباً بك في التصويت</h1>
+        
         <input type="text" id="username" placeholder="أدخل اسمك هنا..." autocomplete="off">
+        
+        <input type="password" id="admin-password" placeholder="كلمة السر (للإدمن فقط)" autocomplete="off">
+        
         <button onclick="login()" class="glass-button">دخول</button>
         <a href="info.html" class="glass-button" style="margin-top:10px; display:block; text-decoration:none;">عودة للمعلومات</a>
     </div>
 
     <div id="voting-page" class="container glass-effect hidden">
-        <h2>اختر انمي لفعالية الغد  </h2>
+        <h2>اختر الأنمي المفضل لديك</h2>
         <div class="buttons-grid vertical-grid">
             <button class="vote-btn shadow-yellow" onclick="vote('Naruto')">Naruto</button>
             <button class="vote-btn shadow-red" onclick="vote('One Piece')">One Piece</button>

@@ -79,23 +79,23 @@ function reVote() {
 }
 
 // ------------------------------------------------------------------
-// وظائف الأدمن (لم تتغير)
+// وظائف الأدمن
 // ------------------------------------------------------------------
 
 function resetAll() {
-    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟ لا يمكن التراجع عن هذا الإجراء.")) {
+    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟ (سيتم حفظها في سجل المحذوفات)")) {
         socket.emit('reset_votes');
     }
 }
 
 function deleteVote(username) {
-    if (confirm(`هل أنت متأكد من حذف تصويت المستخدم: ${username}؟`)) {
+    if (confirm(`هل أنت متأكد من حذف تصويت المستخدم: ${username}؟ (سيتم حفظه في سجل المحذوفات)`)) {
         socket.emit('delete_vote', username);
     }
 }
 
 // ------------------------------------------------------------------
-// معالجة البيانات القادمة من الخادم (لم تتغير)
+// معالجة البيانات القادمة من الخادم
 // ------------------------------------------------------------------
 socket.on('connect', () => {
     console.log('Connected to server via Socket.IO');
@@ -148,17 +148,16 @@ function updateAdminResults(votes) {
 }
 
 // ------------------------------------------------------------------
-// 🆕 وظيفة جديدة للتحكم في حالة الإيقاف المؤقت
+// وظيفة التحكم في حالة الإيقاف المؤقت (كما طلبت)
 // ------------------------------------------------------------------
 function checkVotingBlockStatus() {
     const votingPage = document.getElementById('voting-page');
     const buttonsGrid = document.querySelector('.buttons-grid');
     const statusMsg = document.getElementById('status-msg');
     
-    // تأكد من أننا على صفحة التصويت
     if (votingPage && !votingPage.classList.contains('hidden')) {
         
-        // 🛑 المنطق الجديد لإيقاف التصويت مؤقتاً
+        // 🛑 منطق إيقاف التصويت حالياً
         
         if (buttonsGrid) {
             buttonsGrid.classList.add('hidden'); // إخفاء الأزرار
@@ -166,7 +165,6 @@ function checkVotingBlockStatus() {
         
         if (statusMsg) {
             statusMsg.classList.remove('hidden'); // إظهار رسالة الحالة
-            // وضع الرسالة المطلوبة مع تنسيق بسيط
             statusMsg.innerHTML = `
                 <h2 style="color:#ffd700; font-size: 1.8rem; margin-bottom: 5px;">التصويت متوقف حالياً</h2>
                 <p style="font-size: 1.2rem; margin-top: 0; color: #fff;">سيتم فتح التصويت الساعة **11 مساءً** اليوم.</p>
@@ -182,7 +180,6 @@ function checkVotingBlockStatus() {
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('currentUsername');
     
-    // إذا كان هناك اسم مستخدم محفوظ وليس admin، نقله لصفحة التصويت
     if (username && username.toLowerCase() !== 'admin') {
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('voting-page').classList.remove('hidden');
@@ -190,7 +187,4 @@ document.addEventListener('DOMContentLoaded', () => {
         // استدعاء دالة الإيقاف المؤقت عند تحميل الصفحة
         checkVotingBlockStatus();
     }
-    
-    // إذا كان المستخدم قد صوت من قبل، فإن vote() تقوم بتحديث status-msg، 
-    // ولكن checkVotingBlockStatus() أعلاه ستفرض رسالة الإيقاف.
 });

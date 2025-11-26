@@ -1,161 +1,92 @@
-// (ملف الخادم - server.js)
+// server.js
 
-const fs = require('fs');
-const path = require('path');
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server); 
+// 🔑 إعداد Socket.IO ليعمل مع خادم HTTP
+const io = socketIo(server);
 
-// 🔑 كلمة السر للإدمن
-const ADMIN_PASSWORD = 'Samer#1212';
-// مسارات الملفات
-const DATA_FILE = path.join(__dirname, 'votes.json'); // لحفظ الأصوات النشطة والمحذوفة
-const LOG_FILE_CSV = path.join(__dirname, 'full_votes_log.csv'); // سجل CSV الكامل
+const PORT = 3000;
 
-let votes = {}; // الأصوات النشطة حالياً
-let deletedVotesLog = {}; // سجل الأصوات المحذوفة
+// 🟢 1. خدمة الملفات الثابتة (Static Files)
+// هذا يخبر Express بأن يخدم جميع الملفات داخل مجلد 'public' (مثل index.html و style.css و script.js).
+app.use(express.static('public'));
 
-// ----------------------------------------------------
-// وظائف تأمين البيانات (Persistence Logic)
-// ----------------------------------------------------
-
-function loadVotes() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            const parsedData = JSON.parse(data);
-            votes = parsedData.active || {};
-            deletedVotesLog = parsedData.deleted || {};
-            console.log('Votes and logs loaded successfully.');
-        } else {
-            console.log('votes.json file not found, starting fresh.');
-            votes = {};
-            deletedVotesLog = {};
-        }
-    } catch (error) {
-        console.error('Error loading votes:', error);
-        votes = {};
-        deletedVotesLog = {};
-    }
+// 🗳️ تخزين الأصوات
+// 'votes' هو كائن لتخزين الأصوات بشكل مؤقت. المفتاح هو اسم الأنمي، والقيمة هي مصفوفة بأسماء المصوتين.
+let votes = {}; 
+/* مثال على هيكل votes:
+{
+    "One Piece": ["عزوز", "أحمد"],
+    "HXH": ["سارة"],
+    "Demon Slayer": ["فهد", "ريم"]
 }
+*/
 
-function saveVotes() {
-    try {
-        const dataToSave = JSON.stringify({ active: votes, deleted: deletedVotesLog }, null, 2);
-        fs.writeFileSync(DATA_FILE, dataToSave, 'utf8');
-        console.log('Votes saved to file successfully.');
-    } catch (error) {
-        console.error('Error saving votes:', error);
-    }
-}
-
-function updateCSVLog() {
-    let csvContent = 'Timestamp,Username,Team,Status\n';
-    
-    // 1. إضافة الأصوات النشطة
-    for (const username in votes) {
-        const timestamp = new Date().toISOString(); 
-        csvContent += `${timestamp},${username},${votes[username]},Active\n`;
-    }
-    
-    // 2. إضافة الأصوات المحذوفة
-    for (const username in deletedVotesLog) {
-        const deleteTimestamp = deletedVotesLog[username].deletedAt || new Date().toISOString();
-        const originalTeam = deletedVotesLog[username].team;
-        csvContent += `${deleteTimestamp},${username},${originalTeam},Deleted\n`;
-    }
-    
-    fs.writeFileSync(LOG_FILE_CSV, csvContent, 'utf8');
-    console.log('CSV log updated successfully.');
-}
-
-loadVotes(); 
-
-// ----------------------------------------------------
-// منطق الخادم و Routes
-// ----------------------------------------------------
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 🆕 المسار الجديد: يسمح بتحميل ملف السجل بشكل آمن
-app.get('/download-log', (req, res) => {
-    // التحقق من كلمة السر عبر متغير 'key' في رابط التحميل (Query Parameter)
-    const password = req.query.key; 
-    
-    if (password === ADMIN_PASSWORD) {
-        // إذا تطابقت كلمة السر، يتم إرسال الملف للتحميل
-        res.download(LOG_FILE_CSV, 'full_votes_log.csv'); 
-    } else {
-        // إذا لم تتطابق، يتم رفض الطلب
-        res.status(401).send('غير مصرح لك. يجب توفير مفتاح سري للتحميل.');
-    }
-});
-
+// 🔑 2. معالجة اتصالات Socket.IO
 io.on('connection', (socket) => {
-    console.log('New client connected');
+    console.log(`A user connected: ${socket.id}`);
     
+    // عند اتصال عميل جديد، أرسل له حالة التصويت الحالية
     socket.emit('update_results', votes);
 
-    socket.on('new_vote', (data) => {
-        if (deletedVotesLog[data.username]) {
-            delete deletedVotesLog[data.username];
-        }
-
-        votes[data.username] = data.team;
-        io.emit('update_results', votes);
-        saveVotes();
-        updateCSVLog(); 
-    });
-
-    socket.on('admin_login', (data, callback) => {
-        if (data.password === ADMIN_PASSWORD) {
-            callback({ success: true, votes: votes });
-        } else {
-            callback({ success: false });
-        }
-    });
-
-    socket.on('delete_vote', (usernameToDelete) => {
-        if (votes[usernameToDelete]) {
-            deletedVotesLog[usernameToDelete] = {
-                team: votes[usernameToDelete],
-                deletedAt: new Date().toISOString()
-            };
-
-            delete votes[usernameToDelete];
-            
-            io.emit('update_results', votes);
-            saveVotes(); 
-            updateCSVLog(); 
-        }
-    });
-
-    socket.on('reset_votes', () => {
-        const resetTime = new Date().toISOString();
+    // 📩 معالجة حدث التصويت
+    socket.on('submit_vote', (data) => {
+        const { username, team } = data;
         
-        for (const username in votes) {
-            deletedVotesLog[username] = {
-                team: votes[username],
-                deletedAt: resetTime 
-            };
+        // 1. إزالة أي تصويت سابق لهذا المستخدم
+        for (const existingTeam in votes) {
+            // filter: تزيل اسم المستخدم من أي قائمة تصويت سابقة
+            votes[existingTeam] = votes[existingTeam].filter(name => name !== username);
         }
+        
+        // 2. إضافة التصويت الجديد
+        if (!votes[team]) {
+            votes[team] = [];
+        }
+        votes[team].push(username);
+        
+        console.log(`Vote received from ${username} for ${team}`);
 
+        // 3. إرسال التحديث لجميع العملاء
+        io.emit('update_results', votes);
+    });
+
+    // 🗑️ معالجة حدث تصفير التصويت (للمدير)
+    socket.on('reset_all', () => {
         votes = {};
-        
+        console.log('All votes have been reset by Admin.');
+        // إرسال كائن فارغ لجميع العملاء لتحديث النتائج
         io.emit('update_results', votes);
-        saveVotes();
-        updateCSVLog(); 
+    });
+
+    // ❌ معالجة حدث حذف مصوت فردي (للمدير)
+    socket.on('delete_voter', (data) => {
+        const { voterName, team } = data;
+
+        if (votes[team]) {
+            votes[team] = votes[team].filter(name => name !== voterName);
+            
+            // تنظيف الفريق إذا أصبح فارغاً
+            if (votes[team].length === 0) {
+                delete votes[team];
+            }
+            
+            console.log(`Voter ${voterName} removed from ${team}.`);
+            io.emit('update_results', votes);
+        }
     });
 
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+        console.log(`User disconnected: ${socket.id}`);
     });
 });
 
-const PORT = process.env.PORT || 3000;
+// 🚀 تشغيل الخادم
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log('Make sure to run the client-side code from the public folder.');
 });

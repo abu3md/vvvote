@@ -44,8 +44,7 @@ function login() {
     adminPage.classList.add('hidden'); 
     votingPage.classList.remove('hidden');
     
-    // عند الدخول، قم بتشغيل منطق إيقاف التصويت
-    checkVotingBlockStatus(); 
+    // 🔑 لم نعد نستدعي checkVotingBlockStatus() هنا، لذا التصويت مفتوح.
 }
 
 // ------------------------------------------------------------------
@@ -71,7 +70,7 @@ function vote(team) {
 }
 
 // ------------------------------------------------------------------
-// وظيفة إعادة التصويت (إذا سمحت الإدارة)
+// وظيفة إعادة التصويت
 // ------------------------------------------------------------------
 function reVote() {
     document.querySelector('.buttons-grid').classList.remove('hidden');
@@ -79,7 +78,7 @@ function reVote() {
 }
 
 // ------------------------------------------------------------------
-// وظائف الأدمن
+// وظائف الأدمن (الحذف والتصفير الآمن)
 // ------------------------------------------------------------------
 
 function resetAll() {
@@ -148,31 +147,8 @@ function updateAdminResults(votes) {
 }
 
 // ------------------------------------------------------------------
-// وظيفة التحكم في حالة الإيقاف المؤقت (كما طلبت)
+// تم حذف دالة checkVotingBlockStatus() ومنطقها
 // ------------------------------------------------------------------
-function checkVotingBlockStatus() {
-    const votingPage = document.getElementById('voting-page');
-    const buttonsGrid = document.querySelector('.buttons-grid');
-    const statusMsg = document.getElementById('status-msg');
-    
-    if (votingPage && !votingPage.classList.contains('hidden')) {
-        
-        // 🛑 منطق إيقاف التصويت حالياً
-        
-        if (buttonsGrid) {
-            buttonsGrid.classList.add('hidden'); // إخفاء الأزرار
-        }
-        
-        if (statusMsg) {
-            statusMsg.classList.remove('hidden'); // إظهار رسالة الحالة
-            statusMsg.innerHTML = `
-                <h2 style="color:#ffd700; font-size: 1.8rem; margin-bottom: 5px;">التصويت متوقف حالياً</h2>
-                <p style="font-size: 1.2rem; margin-top: 0; color: #fff;">سيتم فتح التصويت الساعة **11 مساءً** اليوم.</p>
-            `;
-        }
-        // ----------------------------------------------------------
-    }
-}
 
 // ------------------------------------------------------------------
 // تهيئة عند تحميل الصفحة
@@ -180,11 +156,9 @@ function checkVotingBlockStatus() {
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('currentUsername');
     
+    // إذا كان هناك اسم مستخدم محفوظ وليس admin، نقله لصفحة التصويت مباشرة
     if (username && username.toLowerCase() !== 'admin') {
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('voting-page').classList.remove('hidden');
-        
-        // استدعاء دالة الإيقاف المؤقت عند تحميل الصفحة
-        checkVotingBlockStatus();
     }
 });

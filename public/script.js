@@ -1,23 +1,18 @@
 // (كود الواجهة الأمامية - public/script.js)
 
-// إعداد اتصال Socket.io
-// 🔑 يجب التأكد من أن ملف socket.io.js مُضمَّن في HTML: <script src="/socket.io/socket.io.js"></script>
 const socket = io(); 
 
 // ------------------------------------------------------------------
 // وظيفة الدخول (المستخدم العادي والأدمن)
 // ------------------------------------------------------------------
 function login() {
-    // جلب العناصر الأساسية
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('admin-password'); 
     const loginPage = document.getElementById('login-page');
     const votingPage = document.getElementById('voting-page');
     const adminPage = document.getElementById('admin-page');
     
-    // جلب القيم
     const username = usernameInput.value.trim();
-    // التأكد من قراءة كلمة السر إذا كان الحقل موجوداً
     const password = passwordInput ? passwordInput.value.trim() : ''; 
 
     if (!username) {
@@ -25,16 +20,15 @@ function login() {
         return;
     }
 
-    // 1. حالة الأدمن (التحقق من كلمة السر عبر الخادم)
+    // 1. حالة الأدمن 
     if (username.toLowerCase() === 'admin') {
         
         socket.emit('admin_login', { username: username, password: password }, (response) => {
             if (response.success) {
-                // النجاح: إظهار لوحة الأدمن
                 loginPage.classList.add('hidden');
                 votingPage.classList.add('hidden'); 
                 adminPage.classList.remove('hidden');
-                updateAdminResults(response.votes); // تحديث النتائج فوراً
+                updateAdminResults(response.votes); 
             } else {
                 alert('كلمة السر غير صحيحة للإدمن! (تذكر: Samer#1212)');
             }
@@ -42,15 +36,16 @@ function login() {
         return; 
     }
 
-    // 2. حالة المستخدم العادي (الدخول مباشرةً)
+    // 2. حالة المستخدم العادي
     
-    // حفظ اسم المستخدم محليًا
     localStorage.setItem('currentUsername', username);
     
-    // إخفاء صفحة الدخول وإظهار صفحة التصويت
     loginPage.classList.add('hidden');
     adminPage.classList.add('hidden'); 
     votingPage.classList.remove('hidden');
+    
+    // عند الدخول، قم بتشغيل منطق إيقاف التصويت
+    checkVotingBlockStatus(); 
 }
 
 // ------------------------------------------------------------------
@@ -68,10 +63,11 @@ function vote(team) {
     // إرسال التصويت إلى الخادم
     socket.emit('new_vote', { username: username, team: team });
 
-    // إخفاء أزرار التصويت وعرض رسالة الحالة
-    // 🔑 يجب أن يحتوي vote.html على عنصر id="buttons-grid" و id="status-msg"
+    // إظهار رسالة "تم التصويت"
     document.querySelector('.buttons-grid').classList.add('hidden');
-    document.getElementById('status-msg').classList.remove('hidden');
+    const statusMsg = document.getElementById('status-msg');
+    statusMsg.classList.remove('hidden');
+    statusMsg.innerHTML = 'تم تسجيل صوتك. شكراً لك! <button onclick="reVote()">تصويت مرة أخرى</button>';
 }
 
 // ------------------------------------------------------------------
@@ -83,7 +79,7 @@ function reVote() {
 }
 
 // ------------------------------------------------------------------
-// وظائف الأدمن
+// وظائف الأدمن (لم تتغير)
 // ------------------------------------------------------------------
 
 function resetAll() {
@@ -99,20 +95,18 @@ function deleteVote(username) {
 }
 
 // ------------------------------------------------------------------
-// معالجة البيانات القادمة من الخادم
+// معالجة البيانات القادمة من الخادم (لم تتغير)
 // ------------------------------------------------------------------
 socket.on('connect', () => {
     console.log('Connected to server via Socket.IO');
 });
 
 socket.on('update_results', (votes) => {
-    // تحديث النتائج في لوحة الأدمن (إذا كانت مفتوحة)
     if (!document.getElementById('admin-page').classList.contains('hidden')) {
         updateAdminResults(votes);
     }
 });
 
-// وظيفة تحديث عرض النتائج في لوحة الأدمن
 function updateAdminResults(votes) {
     const resultsContainer = document.getElementById('results-container');
     const totalVotesElement = document.getElementById('total-votes');
@@ -123,7 +117,6 @@ function updateAdminResults(votes) {
 
     totalVotesElement.textContent = `إجمالي الأصوات: ${totalCount}`;
 
-    // 1. فرز الأصوات حسب الفريق
     for (const user in votes) {
         const team = votes[user];
         if (!teamCounts[team]) {
@@ -133,7 +126,6 @@ function updateAdminResults(votes) {
         teamCounts[team].voters.push(user);
     }
 
-    // 2. عرض النتائج
     for (const team in teamCounts) {
         const data = teamCounts[team];
         const percentage = totalCount > 0 ? (data.count / totalCount) * 100 : 0;
@@ -156,6 +148,35 @@ function updateAdminResults(votes) {
 }
 
 // ------------------------------------------------------------------
+// 🆕 وظيفة جديدة للتحكم في حالة الإيقاف المؤقت
+// ------------------------------------------------------------------
+function checkVotingBlockStatus() {
+    const votingPage = document.getElementById('voting-page');
+    const buttonsGrid = document.querySelector('.buttons-grid');
+    const statusMsg = document.getElementById('status-msg');
+    
+    // تأكد من أننا على صفحة التصويت
+    if (votingPage && !votingPage.classList.contains('hidden')) {
+        
+        // 🛑 المنطق الجديد لإيقاف التصويت مؤقتاً
+        
+        if (buttonsGrid) {
+            buttonsGrid.classList.add('hidden'); // إخفاء الأزرار
+        }
+        
+        if (statusMsg) {
+            statusMsg.classList.remove('hidden'); // إظهار رسالة الحالة
+            // وضع الرسالة المطلوبة مع تنسيق بسيط
+            statusMsg.innerHTML = `
+                <h2 style="color:#ffd700; font-size: 1.8rem; margin-bottom: 5px;">التصويت متوقف حالياً</h2>
+                <p style="font-size: 1.2rem; margin-top: 0; color: #fff;">سيتم فتح التصويت الساعة **11 مساءً** اليوم.</p>
+            `;
+        }
+        // ----------------------------------------------------------
+    }
+}
+
+// ------------------------------------------------------------------
 // تهيئة عند تحميل الصفحة
 // ------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -165,5 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (username && username.toLowerCase() !== 'admin') {
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('voting-page').classList.remove('hidden');
+        
+        // استدعاء دالة الإيقاف المؤقت عند تحميل الصفحة
+        checkVotingBlockStatus();
     }
+    
+    // إذا كان المستخدم قد صوت من قبل، فإن vote() تقوم بتحديث status-msg، 
+    // ولكن checkVotingBlockStatus() أعلاه ستفرض رسالة الإيقاف.
 });

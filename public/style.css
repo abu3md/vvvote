@@ -1,7 +1,6 @@
 /* ---------------------------------------------------- */
 /* 🆕 تعريف الخطوط المخصصة */
 /* ---------------------------------------------------- */
-/* الخط العربي: Lalezar */
 @font-face {
     font-family: 'Lalezar';
     src: url('assets/Lalezar-Regular.ttf') format('truetype');
@@ -10,7 +9,6 @@
     font-display: swap;
 }
 
-/* الخط الإنجليزي: Titan One */
 @font-face {
     font-family: 'TitanOne';
     src: url('assets/TitanOne-Regular.ttf') format('truetype');
@@ -20,10 +18,9 @@
 }
 
 /* ---------------------------------------------------- */
-/* تطبيق الخطوط والأساسيات */
+/* الأساسيات */
 /* ---------------------------------------------------- */
 body {
-    /* تطبيق الخط العربي كخط أساسي للموقع بالكامل */
     font-family: 'Lalezar', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #04073d;
     color: white;
@@ -33,7 +30,6 @@ body {
     min-height: 100vh;
     margin: 0;
     text-align: center;
-    /* الخلفية الثابتة والكاملة لكل الصفحات */
     background-image: url('assets/back.png');
     background-size: cover;
     background-position: center;
@@ -42,20 +38,17 @@ body {
     overflow-x: hidden;
 }
 
-/* تطبيق الخط الإنجليزي على العناصر التي تحتوي على نصوص إنجليزية بارزة */
 .vote-btn, .main-title, .action-btn {
     font-family: 'TitanOne', sans-serif;
 }
 
 .hidden { display: none !important; }
 
-/* 💎 تأثير الزجاج العام (Glassmorphism) - يستخدم الآن الصورة glass.png */
+/* 💎 تأثير الزجاج */
 .glass-effect {
-    /* الصورة الزجاجية كخلفية */
     background: url('assets/glass.png') center / cover no-repeat;
     border-radius: 16px; 
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); 
-    /* تم إزالة الفلتر لتجنب التعارض مع الصورة */
     backdrop-filter: none; 
     -webkit-backdrop-filter: none;
     border: none;
@@ -63,21 +56,15 @@ body {
     overflow: hidden; 
 }
 
-/* طبقة داخلية شفافة للمحتوى لضمان رؤية الخلفية من خلالها */
 .glass-effect::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* خلفية شفافة خفيفة جداً للمحتوى الداخلي */
+    top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255, 255, 255, 0.05); 
     z-index: 1; 
     border-radius: inherit; 
 }
 
-/* المحتوى الفعلي يجب أن يكون فوق الطبقة الشفافة */
 .glass-effect > *:not(img) { 
     position: relative;
     z-index: 2;
@@ -92,233 +79,12 @@ body {
     background: transparent;
 }
 
-/* --- 🎬 شاشة البداية (index.html) --- */
-
-.intro-layout {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    z-index: 10;
-}
-
-.main-menu-logo {
-    width: 80%; max-width: 600px; height: auto;
-    transform: translateY(-50px);
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-}
-
-.clean-button {
-    background: transparent; border: none; outline: none; cursor: pointer;
-    transition: transform 0.2s;
-}
-.clean-button img { width: 180px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
-.clean-button:hover { transform: scale(1.1); }
-.clean-button:active { transform: scale(0.95); }
-
-/* --- 📜 صفحة المعلومات (info.html) --- */
-
-.info-container {
-    max-height: 90vh; 
-    width: 90%;
-    max-width: 650px;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; 
-}
-
-.scroll-content {
-    padding: 20px;
-    overflow-y: auto;
-    text-align: right;
-    flex-grow: 1; 
-    position: relative;
-}
-
-/* تخصيص شريط التمرير */
-.scroll-content::-webkit-scrollbar { width: 8px; }
-.scroll-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-.scroll-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
-
-
-.sticky-header {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    position: sticky; 
-    top: 0;
-    z-index: 5;
-}
-
-.action-btn {
-    width: 100%; padding: 15px; font-size: 1.2rem; font-weight: bold;
-    color: white; background: linear-gradient(45deg, #ff9800, #ff5722);
-    border: none; border-radius: 10px; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); transition: transform 0.2s;
-}
-
-.action-btn:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6); }
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(255, 87, 34, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0); }
-}
-.pulse-animation { animation: pulse 2s infinite; }
-
-/* تنسيقات الفرق والقواعد (رسمي) */
-.main-title { text-align: center; color: #ffd700; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.intro-text { text-align: center; line-height: 1.6; color: inherit; } 
-
-h2 {
-    color: #00bcd4; 
-    border-bottom: 2px solid rgba(255,255,255,0.1);
-    padding-bottom: 5px; margin-top: 25px; font-size: 1.3rem;
-}
-
-.rules-list { list-style-type: none; padding: 0; }
-.rules-list li {
-    background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 10px;
-    border-radius: 6px; 
-    color: inherit; 
-}
-
-/* ---------------------------------------------------- */
-/* 🆕 تنسيقات القائمة العمودية للفرق (Accordion) */
-/* ---------------------------------------------------- */
-
-.teams-list-container {
-    padding: 10px 0;
-}
-
-/* زجاج تقليدي (شفافية + فلتر) للحفاظ على سلاسة القائمة داخل info.html */
-.item {
-    padding: 0;
-    background: rgba(255, 255, 255, 0.1); 
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(8px); 
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    
-    margin-bottom: 1rem;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease, box-shadow 0.3s ease;
-}
-
-.item:hover {
-    background: rgba(255, 255, 255, 0.2); 
-    transform: translateY(-2px);
-}
-
-.item.selected {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-}
-
-/* 🟢 ألوان الظل القوي (Glow) حول الفريق (حسب ألوانك القديمة) */
-/* Blue Team - تدرج إلى أزرق لامع */
-.t-blue { 
-    border: 1px solid rgba(33, 150, 243, 0.6); 
-    box-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
-    background-color: #093e58; /* لون الفريق 1 المحدد سابقاً */
-}      
-/* Red Team - تدرج إلى أحمر لامع */
-.t-red { 
-    border: 1px solid rgba(244, 67, 54, 0.6); 
-    box-shadow: 0 0 15px rgba(244, 67, 54, 0.4);
-    background-color: #681212; /* لون الفريق 2 المحدد سابقاً */
-}       
-/* Yellow Team - تدرج إلى أصفر لامع */
-.t-yellow { 
-    border: 1px solid rgba(255, 235, 59, 0.6); 
-    box-shadow: 0 0 15px rgba(255, 235, 59, 0.4);
-}    
-/* Green Team - تدرج إلى أخضر لامع */
-.t-green { 
-    border: 1px solid rgba(76, 175, 80, 0.6); 
-    box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
-}     
-/* Gray Team - تدرج إلى رمادي لامع */
-.t-gray { 
-    border: 1px solid rgba(158, 158, 158, 0.6); 
-    box-shadow: 0 0 15px rgba(158, 158, 158, 0.4);
-}
-
-.t-blue:hover { box-shadow: 0 0 25px rgba(33, 150, 243, 0.8); }
-.t-red:hover { box-shadow: 0 0 25px rgba(244, 67, 54, 0.8); }
-.t-yellow:hover { box-shadow: 0 0 25px rgba(255, 235, 59, 0.8); }
-.t-green:hover { box-shadow: 0 0 25px rgba(76, 175, 80, 0.8); }
-.t-gray:hover { box-shadow: 0 0 25px rgba(158, 158, 158, 0.8); }
-
-
-.team-header {
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    color: white;
-}
-
-.item-text {
-    color: white;
-    margin: 0;
-    font-size: 1.1rem;
-}
-
-.leader-name {
-    font-size: 0.9rem;
-    color: white; 
-    margin-right: 10px;
-}
-
-.toggle-icon {
-    transition: transform 0.3s ease;
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-left: 10px;
-}
-
-.team-members-list {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-out, padding 0.4s ease-out;
-    background: rgba(0, 0, 0, 0.3); 
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    list-style: none;
-    padding: 0 16px;
-}
-
-.team-members-list.open {
-    max-height: 500px; 
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-.member-item {
-    padding: 5px 0;
-    color: inherit; 
-    font-size: 0.95rem;
-    text-align: right;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-}
-
-.member-item:last-child {
-    border-bottom: none;
-}
-
-/* ---------------------------------------------------- */
-/* --- 🗳️ صفحة التصويت والأدمن (vote.html) --- */
-/* ---------------------------------------------------- */
-
+/* --- العناصر العامة --- */
 .glass-button {
     cursor: pointer; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.4);
     border-radius: 8px; color: white; background: rgba(255,255,255,0.15);
     transition: 0.2s; font-weight: bold;
-    font-family: 'Lalezar', sans-serif; /* لضمان استخدام الخط العربي */
+    font-family: 'Lalezar', sans-serif;
 }
 .glass-button:hover { background: rgba(255,255,255,0.3); }
 
@@ -329,7 +95,7 @@ input {
     color: white; outline: none; text-align: center;
 }
 
-/* أزرار التصويت */
+/* --- أزرار التصويت (Vote Page) --- */
 .buttons-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
 
 .vote-btn {
@@ -340,21 +106,23 @@ input {
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     backdrop-filter: blur(5px);
 }
-
 .vote-btn:hover { transform: scale(1.02); background: rgba(255, 255, 255, 0.2); }
 
-/* ألوان الظلال المخصصة (Glow Effects) */
+/* ألوان أزرار التصويت */
 .shadow-green { box-shadow: 0 0 15px rgba(0, 255, 0, 0.4); border-color: rgba(0, 255, 0, 0.3); }
 .shadow-yellow { box-shadow: 0 0 15px rgba(255, 235, 59, 0.4); border-color: rgba(255, 235, 59, 0.3); }
 .shadow-orange { box-shadow: 0 0 15px rgba(255, 152, 0, 0.4); border-color: rgba(255, 152, 0, 0.3); }
 .shadow-red { box-shadow: 0 0 15px rgba(244, 67, 54, 0.4); border-color: rgba(244, 67, 54, 0.3); }
+/* 🆕 اللون البنفسجي لـ Demon Slayer */
+.shadow-purple { box-shadow: 0 0 15px rgba(138, 43, 226, 0.6); border-color: rgba(138, 43, 226, 0.4); }
 
 .shadow-green:hover { box-shadow: 0 0 25px rgba(0, 255, 0, 0.8); }
 .shadow-yellow:hover { box-shadow: 0 0 25px rgba(255, 235, 59, 0.8); }
 .shadow-orange:hover { box-shadow: 0 0 25px rgba(255, 152, 0, 0.8); }
 .shadow-red:hover { box-shadow: 0 0 25px rgba(244, 67, 54, 0.8); }
+.shadow-purple:hover { box-shadow: 0 0 25px rgba(138, 43, 226, 0.8); }
 
-/* الأدمن والنتائج */
+/* --- الأدمن والنتائج --- */
 .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .danger-btn { background: rgba(255, 0, 0, 0.3); border: 1px solid red; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
 .result-card {
@@ -367,5 +135,73 @@ input {
     border-radius: 4px; cursor: pointer; transition: 0.2s;
 }
 .voter-name:hover { background: rgba(255,0,0,0.6); text-decoration: line-through; }
-
 .bar-container { background: rgba(255,255,255,0.1); height:8px; border-radius:4px; overflow:hidden; }
+
+/* --- تنسيقات صفحة المعلومات (Info Page & Teams) --- */
+.intro-layout { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+.main-menu-logo { width: 80%; max-width: 600px; height: auto; transform: translateY(-50px); filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+.clean-button { background: transparent; border: none; outline: none; cursor: pointer; transition: transform 0.2s; }
+.clean-button img { width: 180px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+.clean-button:hover { transform: scale(1.1); }
+.clean-button:active { transform: scale(0.95); }
+
+.info-container { max-height: 90vh; width: 90%; max-width: 650px; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.scroll-content { padding: 20px; overflow-y: auto; text-align: right; flex-grow: 1; position: relative; }
+.scroll-content::-webkit-scrollbar { width: 8px; }
+.scroll-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+.scroll-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+.sticky-header { background: rgba(0, 0, 0, 0.3); padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 5; }
+.main-title { text-align: center; color: #ffd700; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.intro-text { text-align: center; line-height: 1.6; color: inherit; } 
+h2 { color: #00bcd4; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-top: 25px; font-size: 1.3rem; }
+.rules-list { list-style-type: none; padding: 0; }
+.rules-list li { background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 10px; border-radius: 6px; color: inherit; }
+
+/* --- قوائم الفرق (Teams Accordion) --- */
+.teams-list-container { padding: 10px 0; }
+.item {
+    padding: 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 1rem; overflow: hidden;
+    cursor: pointer; transition: all 0.3s ease, box-shadow 0.3s ease;
+}
+.item:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+.item.selected { background: rgba(255, 255, 255, 0.25); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); }
+
+/* ألوان الفرق */
+.t-blue { background-color: #093e58; border: 1px solid rgba(33, 150, 243, 0.6); box-shadow: 0 0 15px rgba(33, 150, 243, 0.4); }
+.t-red { background-color: #681212; border: 1px solid rgba(244, 67, 54, 0.6); box-shadow: 0 0 15px rgba(244, 67, 54, 0.4); }
+.t-yellow { border: 1px solid rgba(255, 235, 59, 0.6); box-shadow: 0 0 15px rgba(255, 235, 59, 0.4); }
+.t-green { border: 1px solid rgba(76, 175, 80, 0.6); box-shadow: 0 0 15px rgba(76, 175, 80, 0.4); }
+.t-gray { border: 1px solid rgba(158, 158, 158, 0.6); box-shadow: 0 0 15px rgba(158, 158, 158, 0.4); color: #333; }
+
+/* ألوان الفرق الجديدة */
+.t-darkred { background-color: #26102e; border: 1px solid rgba(150, 0, 0, 0.6); box-shadow: 0 0 15px rgba(150, 0, 0, 0.4); }
+.t-pink { background-color: #ff69b4; border: 1px solid rgba(255, 105, 180, 0.6); box-shadow: 0 0 15px rgba(255, 105, 180, 0.4); color: #333; }
+.t-orange { background-color: #ffa500; border: 1px solid rgba(255, 165, 0, 0.6); box-shadow: 0 0 15px rgba(255, 165, 0, 0.4); color: #333; }
+
+/* تأثيرات التحويم للفرق */
+.t-blue:hover { box-shadow: 0 0 25px rgba(33, 150, 243, 0.8); }
+.t-red:hover { box-shadow: 0 0 25px rgba(244, 67, 54, 0.8); }
+.t-yellow:hover { box-shadow: 0 0 25px rgba(255, 235, 59, 0.8); }
+.t-green:hover { box-shadow: 0 0 25px rgba(76, 175, 80, 0.8); }
+.t-gray:hover { box-shadow: 0 0 25px rgba(158, 158, 158, 0.8); }
+.t-darkred:hover { box-shadow: 0 0 25px rgba(150, 0, 0, 0.8); }
+.t-pink:hover { box-shadow: 0 0 25px rgba(255, 105, 180, 0.8); }
+.t-orange:hover { box-shadow: 0 0 25px rgba(255, 165, 0, 0.8); }
+
+/* ضبط ألوان النصوص للفرق الفاتحة */
+.t-pink .team-header, .t-pink .leader-name, .t-pink .member-item, .t-pink .toggle-icon,
+.t-orange .team-header, .t-orange .leader-name, .t-orange .member-item, .t-orange .toggle-icon,
+.t-gray .team-header, .t-gray .leader-name, .t-gray .member-item, .t-gray .toggle-icon {
+    color: #333;
+}
+
+.team-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: white; }
+.item-text { color: white; margin: 0; font-size: 1.1rem; }
+.leader-name { font-size: 0.9rem; color: white; margin-right: 10px; }
+.toggle-icon { transition: transform 0.3s ease; font-size: 1.2rem; font-weight: bold; margin-left: 10px; }
+.team-members-list { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; background: rgba(0, 0, 0, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.1); list-style: none; padding: 0 16px; }
+.team-members-list.open { max-height: 500px; padding-top: 10px; padding-bottom: 10px; }
+.member-item { padding: 5px 0; color: inherit; font-size: 0.95rem; text-align: right; border-bottom: 1px dashed rgba(255, 255, 255, 0.05); }
+.member-item:last-child { border-bottom: none; }

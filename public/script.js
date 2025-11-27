@@ -1,125 +1,103 @@
-// public/script.js
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. تحديد العناصر الأساسية
+    const votingPage = document.getElementById('voting-page');
+    const voteButtons = document.querySelectorAll('.vote-btn');
+    const voterNameInput = document.getElementById('voter-name');
+    const messages = document.getElementById('messages');
 
-const socket = io();
-const ADMIN_PASSWORD = 'admin'; // يمكنك تغيير كلمة السر هنا
+    if (!votingPage) return; // الخروج إذا لم تكن هذه صفحة التصويت
 
-// ------------------------------------------------------------------
-// 🔑 منطق تسجيل الدخول
-// ------------------------------------------------------------------
-
-function login() {
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('admin-password');
-    
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    
-    if (!username) {
-        alert("الرجاء إدخال اسمك أولاً.");
-        return;
-    }
-
-    // إخفاء صفحة تسجيل الدخول
-    document.getElementById('login-page').classList.add('hidden');
-
-    if (password === ADMIN_PASSWORD) {
-        // إذا كان المدير: إظهار صفحة الأدمن فقط
-        document.getElementById('admin-page').classList.remove('hidden');
-        // يمكن للأدمن رؤية الأزرار، لكن لن نقوم بإظهارها هنا افتراضياً
-    } else {
-        // إذا كان مستخدماً عادياً: إظهار صفحة التصويت المغلقة فقط
-        document.getElementById('voting-page').classList.remove('hidden');
-        
-        // 🚨 إخفاء أزرار التصويت والتأكد من ظهور رسالة الإغلاق
-        document.getElementById('vote-buttons-container').classList.add('hidden');
-        document.getElementById('closed-message').classList.remove('hidden');
-    }
-}
-
-// ------------------------------------------------------------------
-// 🔒 منطق التصويت (هذا الكود لن يعمل فعلياً ما دامت الأزرار مخفية للعامة)
-// ------------------------------------------------------------------
-
-function vote(teamName) {
-    const username = document.getElementById('username').value.trim();
-    
-    // إرسال التصويت إلى الخادم
-    socket.emit('submit_vote', { username: username, team: teamName });
-    
-    // إخفاء الأزرار وإظهار رسالة الحالة بعد التصويت
-    document.getElementById('vote-buttons-container').classList.add('hidden');
-    document.getElementById('status-msg').classList.remove('hidden');
-}
-
-function reVote() {
-    // إظهار الأزرار مرة أخرى وإخفاء رسالة الحالة
-    document.getElementById('vote-buttons-container').classList.remove('hidden');
-    document.getElementById('status-msg').classList.add('hidden');
-}
-
-// ------------------------------------------------------------------
-// 🛠️ منطق الأدمن
-// ------------------------------------------------------------------
-
-// تحديث النتائج عند استقبالها من الخادم
-socket.on('update_results', (votes) => {
-    const resultsContainer = document.getElementById('results-container');
-    const activityNames = ["One Piece", "HXH", "Bleach", "Demon Slayer"]; 
-    const shadowColors = {
-        "One Piece": "shadow-red",
-        "HXH": "shadow-green",
-        "Bleach": "shadow-orange",
-        "Demon Slayer": "shadow-purple"
+    // 2. دالة لعرض رسالة للمستخدم
+    const displayMessage = (message, isError = false) => {
+        messages.textContent = message;
+        messages.style.color = isError ? '#ff6347' : '#4CAF50'; // أحمر للخطأ، أخضر للنجاح
+        messages.classList.remove('hidden');
+        setTimeout(() => {
+            messages.classList.add('hidden');
+        }, 5000);
     };
 
-    let totalVotes = 0;
-    for (const key in votes) {
-        totalVotes += votes[key].length;
-    }
-    document.getElementById('total-votes').textContent = `إجمالي الأصوات: ${totalVotes}`;
+    // 3. دالة معالجة التصويت
+    const handleVote = async (event) => {
+        const team = event.currentTarget.getAttribute('data-vote');
+        const voterName = voterNameInput.value.trim();
 
-    let html = '';
+        if (!voterName) {
+            displayMessage('الرجاء إدخال اسمك أولاً!', true);
+            return;
+        }
 
-    const allResults = activityNames.map(activity => {
-        const voters = votes[activity] || [];
-        const count = voters.length;
-        const percentage = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0;
+        if (!team) {
+            displayMessage('حدث خطأ: لا يوجد فريق محدد.', true);
+            return;
+        }
+
+        // تعطيل الأزرار لمنع التصويت المزدوج أثناء المعالجة
+        voteButtons.forEach(btn => btn.disabled = true);
         
-        return { activity, count, percentage, voters };
-    }).sort((a, b) => b.count - a.count);
+        displayMessage('جارٍ إرسال التصويت...');
 
-    allResults.forEach(result => {
-        const barColorClass = shadowColors[result.activity] || "shadow-gray";
-        const voterNamesHtml = result.voters.map(name => 
-            `<span class="voter-name" onclick="deleteVoter('${name}', '${result.activity}')">${name}</span>`
-        ).join('');
+        try {
+            // إرسال البيانات إلى الخادم
+            const response = await fetch('/submit-vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: voterName, team: team })
+            });
 
-        html += `
-            <div class="result-card">
-                <h4 style="margin: 0;">${result.activity} (${result.count} صوت) - ${result.percentage}%</h4>
-                <div class="bar-container" style="margin-top: 5px;">
-                    <div class="vote-bar ${barColorClass}" style="width: ${result.percentage}%; height: 100%; border-radius: inherit;"></div>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.9rem; text-align: left;">
-                    ${voterNamesHtml}
-                </div>
-            </div>
-        `;
+            // قراءة الرد من الخادم
+            const result = await response.json();
+
+            if (response.ok) {
+                // نجاح التصويت
+                displayMessage(result.message || `تم تسجيل تصويتك لـ ${team} بنجاح!`);
+                // هنا يمكنك إخفاء صفحة التصويت وإظهار رسالة شكر
+                voterNameInput.value = ''; // مسح حقل الاسم
+            } else {
+                // فشل التصويت (مثل محاولة تصويت ثانية)
+                displayMessage(result.error || 'حدث خطأ غير متوقع أثناء التصويت.', true);
+            }
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            displayMessage('فشل الاتصال بالخادم. حاول مرة أخرى.', true);
+        } finally {
+            // إعادة تفعيل الأزرار بعد الانتهاء
+            voteButtons.forEach(btn => btn.disabled = false);
+        }
+    };
+
+    // 4. ربط الأزرار بالدالة
+    voteButtons.forEach(button => {
+        button.addEventListener('click', handleVote);
     });
 
-    resultsContainer.innerHTML = html;
+    // 5. وظيفة لفتح/إغلاق قوائم الفرق في صفحة info.html
+    const teamItems = document.querySelectorAll('.item');
+    teamItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const list = item.querySelector('.team-members-list');
+            const icon = item.querySelector('.toggle-icon');
+            
+            // إغلاق كل القوائم المفتوحة ما عدا القائمة الحالية
+            teamItems.forEach(otherItem => {
+                const otherList = otherItem.querySelector('.team-members-list');
+                const otherIcon = otherItem.querySelector('.toggle-icon');
+                if (otherList !== list && otherList.classList.contains('open')) {
+                    otherList.classList.remove('open');
+                    otherIcon.textContent = '+';
+                }
+            });
+
+            // فتح أو إغلاق القائمة الحالية
+            list.classList.toggle('open');
+            if (list.classList.contains('open')) {
+                icon.textContent = '-';
+            } else {
+                icon.textContent = '+';
+            }
+        });
+    });
 });
-
-// إرسال طلب تصفير الأصوات للخادم
-function resetAll() {
-    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟")) {
-        socket.emit('reset_all');
-    }
-}
-
-// إرسال طلب حذف مصوت للخادم
-function deleteVoter(voterName, team) {
-    if (confirm(`هل أنت متأكد من حذف صوت ${voterName}؟`)) {
-        socket.emit('delete_voter', { voterName, team });
-    }
-}

@@ -1,164 +1,125 @@
-// (كود الواجهة الأمامية - public/script.js)
+// public/script.js
 
-const socket = io(); 
+const socket = io();
+const ADMIN_PASSWORD = 'admin'; // يمكنك تغيير كلمة السر هنا
 
 // ------------------------------------------------------------------
-// وظيفة الدخول (المستخدم العادي والأدمن)
+// 🔑 منطق تسجيل الدخول
 // ------------------------------------------------------------------
+
 function login() {
     const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('admin-password'); 
-    const loginPage = document.getElementById('login-page');
-    const votingPage = document.getElementById('voting-page');
-    const adminPage = document.getElementById('admin-page');
+    const passwordInput = document.getElementById('admin-password');
     
     const username = usernameInput.value.trim();
-    const password = passwordInput ? passwordInput.value.trim() : ''; 
-
+    const password = passwordInput.value.trim();
+    
     if (!username) {
-        alert('الرجاء إدخال اسم المستخدم.');
+        alert("الرجاء إدخال اسمك أولاً.");
         return;
     }
 
-    // 1. حالة الأدمن 
-    if (username.toLowerCase() === 'admin') {
+    // إخفاء صفحة تسجيل الدخول
+    document.getElementById('login-page').classList.add('hidden');
+
+    if (password === ADMIN_PASSWORD) {
+        // إذا كان المدير: إظهار صفحة الأدمن فقط
+        document.getElementById('admin-page').classList.remove('hidden');
+        // يمكن للأدمن رؤية الأزرار، لكن لن نقوم بإظهارها هنا افتراضياً
+    } else {
+        // إذا كان مستخدماً عادياً: إظهار صفحة التصويت المغلقة فقط
+        document.getElementById('voting-page').classList.remove('hidden');
         
-        socket.emit('admin_login', { username: username, password: password }, (response) => {
-            if (response.success) {
-                loginPage.classList.add('hidden');
-                votingPage.classList.add('hidden'); 
-                adminPage.classList.remove('hidden');
-                updateAdminResults(response.votes); 
-            } else {
-                alert('كلمة السر غير صحيحة للإدمن! (تذكر: Samer#1212)');
-            }
-        });
-        return; 
+        // 🚨 إخفاء أزرار التصويت والتأكد من ظهور رسالة الإغلاق
+        document.getElementById('vote-buttons-container').classList.add('hidden');
+        document.getElementById('closed-message').classList.remove('hidden');
     }
-
-    // 2. حالة المستخدم العادي
-    
-    localStorage.setItem('currentUsername', username);
-    
-    loginPage.classList.add('hidden');
-    adminPage.classList.add('hidden'); 
-    votingPage.classList.remove('hidden');
-    
-    // 🔑 لم نعد نستدعي checkVotingBlockStatus() هنا، لذا التصويت مفتوح.
 }
 
 // ------------------------------------------------------------------
-// وظيفة التصويت
+// 🔒 منطق التصويت (هذا الكود لن يعمل فعلياً ما دامت الأزرار مخفية للعامة)
 // ------------------------------------------------------------------
-function vote(team) {
-    const username = localStorage.getItem('currentUsername');
-    if (!username) {
-        alert('الرجاء تسجيل الدخول أولاً.');
-        document.getElementById('login-page').classList.remove('hidden');
-        document.getElementById('voting-page').classList.add('hidden');
-        return;
-    }
 
+function vote(teamName) {
+    const username = document.getElementById('username').value.trim();
+    
     // إرسال التصويت إلى الخادم
-    socket.emit('new_vote', { username: username, team: team });
-
-    // إظهار رسالة "تم التصويت"
-    document.querySelector('.buttons-grid').classList.add('hidden');
-    const statusMsg = document.getElementById('status-msg');
-    statusMsg.classList.remove('hidden');
-    statusMsg.innerHTML = 'تم تسجيل صوتك. شكراً لك! <button onclick="reVote()">تصويت مرة أخرى</button>';
+    socket.emit('submit_vote', { username: username, team: teamName });
+    
+    // إخفاء الأزرار وإظهار رسالة الحالة بعد التصويت
+    document.getElementById('vote-buttons-container').classList.add('hidden');
+    document.getElementById('status-msg').classList.remove('hidden');
 }
 
-// ------------------------------------------------------------------
-// وظيفة إعادة التصويت
-// ------------------------------------------------------------------
 function reVote() {
-    document.querySelector('.buttons-grid').classList.remove('hidden');
+    // إظهار الأزرار مرة أخرى وإخفاء رسالة الحالة
+    document.getElementById('vote-buttons-container').classList.remove('hidden');
     document.getElementById('status-msg').classList.add('hidden');
 }
 
 // ------------------------------------------------------------------
-// وظائف الأدمن (الحذف والتصفير الآمن)
+// 🛠️ منطق الأدمن
 // ------------------------------------------------------------------
 
-function resetAll() {
-    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟ (سيتم حفظها في سجل المحذوفات)")) {
-        socket.emit('reset_votes');
-    }
-}
-
-function deleteVote(username) {
-    if (confirm(`هل أنت متأكد من حذف تصويت المستخدم: ${username}؟ (سيتم حفظه في سجل المحذوفات)`)) {
-        socket.emit('delete_vote', username);
-    }
-}
-
-// ------------------------------------------------------------------
-// معالجة البيانات القادمة من الخادم
-// ------------------------------------------------------------------
-socket.on('connect', () => {
-    console.log('Connected to server via Socket.IO');
-});
-
+// تحديث النتائج عند استقبالها من الخادم
 socket.on('update_results', (votes) => {
-    if (!document.getElementById('admin-page').classList.contains('hidden')) {
-        updateAdminResults(votes);
-    }
-});
-
-function updateAdminResults(votes) {
     const resultsContainer = document.getElementById('results-container');
-    const totalVotesElement = document.getElementById('total-votes');
-    resultsContainer.innerHTML = '';
-    
-    const teamCounts = {};
-    const totalCount = Object.keys(votes).length;
+    const activityNames = ["One Piece", "HXH", "Bleach", "Demon Slayer"]; 
+    const shadowColors = {
+        "One Piece": "shadow-red",
+        "HXH": "shadow-green",
+        "Bleach": "shadow-orange",
+        "Demon Slayer": "shadow-purple"
+    };
 
-    totalVotesElement.textContent = `إجمالي الأصوات: ${totalCount}`;
-
-    for (const user in votes) {
-        const team = votes[user];
-        if (!teamCounts[team]) {
-            teamCounts[team] = { count: 0, voters: [] };
-        }
-        teamCounts[team].count++;
-        teamCounts[team].voters.push(user);
+    let totalVotes = 0;
+    for (const key in votes) {
+        totalVotes += votes[key].length;
     }
+    document.getElementById('total-votes').textContent = `إجمالي الأصوات: ${totalVotes}`;
 
-    for (const team in teamCounts) {
-        const data = teamCounts[team];
-        const percentage = totalCount > 0 ? (data.count / totalCount) * 100 : 0;
+    let html = '';
 
-        const resultCard = document.createElement('div');
-        resultCard.className = 'result-card';
-        resultCard.innerHTML = `
-            <h3>${team} (${data.count} أصوات)</h3>
-            <div class="bar-container" style="margin-bottom: 10px;">
-                <div style="width: ${percentage}%; background-color: #ffd700; height: 100%; border-radius: 4px;"></div>
-            </div>
-            <div class="voters-list" style="text-align: right;">
-                ${data.voters.map(user => 
-                    `<span class="voter-name" onclick="deleteVote('${user}')">${user}</span>`
-                ).join('')}
+    const allResults = activityNames.map(activity => {
+        const voters = votes[activity] || [];
+        const count = voters.length;
+        const percentage = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0;
+        
+        return { activity, count, percentage, voters };
+    }).sort((a, b) => b.count - a.count);
+
+    allResults.forEach(result => {
+        const barColorClass = shadowColors[result.activity] || "shadow-gray";
+        const voterNamesHtml = result.voters.map(name => 
+            `<span class="voter-name" onclick="deleteVoter('${name}', '${result.activity}')">${name}</span>`
+        ).join('');
+
+        html += `
+            <div class="result-card">
+                <h4 style="margin: 0;">${result.activity} (${result.count} صوت) - ${result.percentage}%</h4>
+                <div class="bar-container" style="margin-top: 5px;">
+                    <div class="vote-bar ${barColorClass}" style="width: ${result.percentage}%; height: 100%; border-radius: inherit;"></div>
+                </div>
+                <div style="margin-top: 10px; font-size: 0.9rem; text-align: left;">
+                    ${voterNamesHtml}
+                </div>
             </div>
         `;
-        resultsContainer.appendChild(resultCard);
+    });
+
+    resultsContainer.innerHTML = html;
+});
+
+// إرسال طلب تصفير الأصوات للخادم
+function resetAll() {
+    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟")) {
+        socket.emit('reset_all');
     }
 }
 
-// ------------------------------------------------------------------
-// تم حذف دالة checkVotingBlockStatus() ومنطقها
-// ------------------------------------------------------------------
-
-// ------------------------------------------------------------------
-// تهيئة عند تحميل الصفحة
-// ------------------------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    const username = localStorage.getItem('currentUsername');
-    
-    // إذا كان هناك اسم مستخدم محفوظ وليس admin، نقله لصفحة التصويت مباشرة
-    if (username && username.toLowerCase() !== 'admin') {
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('voting-page').classList.remove('hidden');
+// إرسال طلب حذف مصوت للخادم
+function deleteVoter(voterName, team) {
+    if (confirm(`هل أنت متأكد من حذف صوت ${voterName}؟`)) {
+        socket.emit('delete_voter', { voterName, team });
     }
-});
+}

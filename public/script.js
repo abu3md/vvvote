@@ -31,22 +31,20 @@ function login() {
     // 🕵️‍♂️ التحقق هل المستخدم هو المدير؟
     if (password === ADMIN_PASSWORD) {
         // --- حالة الأدمن ---
-        // إظهار لوحة التحكم
         document.getElementById('admin-page').classList.remove('hidden');
-        // إخفاء صفحة التصويت العادية
         document.getElementById('voting-page').classList.add('hidden'); 
     } else {
         // --- حالة المستخدم العادي ---
-        // إظهار صفحة التصويت
         document.getElementById('voting-page').classList.remove('hidden');
-        // إخفاء لوحة التحكم
         document.getElementById('admin-page').classList.add('hidden'); 
         
-        // 🛑 تطبيق وضع "التصويت مغلق"
-        // إخفاء الأزرار
-        document.getElementById('vote-buttons-container').classList.add('hidden');
-        // إظهار رسالة الإغلاق
-        document.getElementById('closed-message').classList.remove('hidden');
+        // ✅✅✅ التعديل هنا: فتح التصويت ✅✅✅
+        
+        // 1. إظهار أزرار التصويت (إزالة الكلاس hidden)
+        document.getElementById('vote-buttons-container').classList.remove('hidden');
+        
+        // 2. إخفاء رسالة "التصويت مغلق"
+        document.getElementById('closed-message').classList.add('hidden');
     }
 }
 
@@ -65,7 +63,7 @@ function vote(teamName) {
     // إرسال التصويت إلى الخادم
     socket.emit('submit_vote', { username: username, team: teamName });
     
-    // إخفاء الأزرار وإظهار رسالة النجاح
+    // إخفاء الأزرار وإظهار رسالة النجاح بعد التصويت
     document.getElementById('vote-buttons-container').classList.add('hidden');
     document.getElementById('status-msg').classList.remove('hidden');
 }
@@ -84,17 +82,16 @@ function reVote() {
 // 4. وظائف لوحة التحكم (الأدمن)
 // ------------------------------------------------------------------
 
-// استقبال تحديثات النتائج من الخادم
 socket.on('update_results', (votes) => {
     updateAdminView(votes);
 });
 
 function updateAdminView(votes) {
     const resultsContainer = document.getElementById('results-container');
-    // أسماء الفرق التي نريد عرضها
+    
+    // قائمة الخيارات المتاحة
     const activityNames = ["One Piece", "HXH", "Bleach", "Demon Slayer"]; 
     
-    // ربط الأسماء بالألوان
     const shadowColors = {
         "One Piece": "shadow-red",
         "HXH": "shadow-green",
@@ -115,7 +112,6 @@ function updateAdminView(votes) {
 
     let html = '';
 
-    // ترتيب النتائج
     const allResults = activityNames.map(activity => {
         const voters = votes[activity] || [];
         const count = voters.length;
@@ -123,11 +119,9 @@ function updateAdminView(votes) {
         return { activity, count, percentage, voters };
     }).sort((a, b) => b.count - a.count);
 
-    // بناء HTML للنتائج
     allResults.forEach(result => {
         const barColorClass = shadowColors[result.activity] || "shadow-gray";
         
-        // إنشاء قائمة المصوتين مع زر الحذف
         const voterNamesHtml = result.voters.map(name => 
             `<span class="voter-name" onclick="deleteVoter('${name}', '${result.activity}')">${name}</span>`
         ).join('');
@@ -148,14 +142,12 @@ function updateAdminView(votes) {
     resultsContainer.innerHTML = html;
 }
 
-// تصفير الكل
 function resetAll() {
     if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟")) {
         socket.emit('reset_all');
     }
 }
 
-// حذف مصوت واحد
 function deleteVoter(voterName, team) {
     if (confirm(`هل أنت متأكد من حذف صوت ${voterName}؟`)) {
         socket.emit('delete_voter', { voterName, team });

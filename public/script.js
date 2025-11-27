@@ -1,9 +1,8 @@
 // public/script.js
 
-// الاتصال بالخادم
 const socket = io();
 
-// 🔑 إعدادات المدير
+// 🔑 كلمة سر الأدمن للدخول
 const ADMIN_PASSWORD = 'admin'; 
 
 // ------------------------------------------------------------------
@@ -16,80 +15,81 @@ function login() {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
     
-    // التحقق من إدخال الاسم
     if (!username) {
         alert("الرجاء إدخال اسمك أولاً.");
         return;
     }
 
-    // حفظ الاسم لاستخدامه لاحقاً
     localStorage.setItem('currentUser', username);
 
-    // إخفاء صفحة تسجيل الدخول
     document.getElementById('login-page').classList.add('hidden');
 
-    // 🕵️‍♂️ التحقق هل المستخدم هو المدير؟
     if (password === ADMIN_PASSWORD) {
-        // --- حالة الأدمن ---
+        // ✅ دخول كأدمن
         document.getElementById('admin-page').classList.remove('hidden');
-        document.getElementById('voting-page').classList.add('hidden'); 
+        document.getElementById('voting-page').classList.add('hidden');
+        
+        setupDownloadLink(); // إظهار زر تحميل السجل
     } else {
-        // --- حالة المستخدم العادي ---
+        // 👤 دخول كمستخدم عادي
         document.getElementById('voting-page').classList.remove('hidden');
         document.getElementById('admin-page').classList.add('hidden'); 
         
-        // ✅✅✅ التعديل هنا: فتح التصويت ✅✅✅
-        
-        // 1. إظهار أزرار التصويت (إزالة الكلاس hidden)
+        // إظهار أزرار التصويت (التصويت مفتوح)
         document.getElementById('vote-buttons-container').classList.remove('hidden');
-        
-        // 2. إخفاء رسالة "التصويت مغلق"
         document.getElementById('closed-message').classList.add('hidden');
     }
 }
 
+// إضافة زر تحميل السجل في صفحة الأدمن
+function setupDownloadLink() {
+    const adminHeader = document.querySelector('.admin-header');
+    if (!document.getElementById('download-btn')) {
+        const downloadBtn = document.createElement('a');
+        downloadBtn.id = 'download-btn';
+        downloadBtn.href = `/download-log?key=${ADMIN_PASSWORD}`;
+        downloadBtn.className = 'glass-button';
+        downloadBtn.style.marginLeft = '10px';
+        downloadBtn.style.fontSize = '0.9rem';
+        downloadBtn.style.textDecoration = 'none';
+        downloadBtn.innerHTML = '📥 تحميل Excel';
+        adminHeader.appendChild(downloadBtn);
+    }
+}
+
 // ------------------------------------------------------------------
-// 2. وظيفة التصويت (vote)
+// 2. وظيفة التصويت
 // ------------------------------------------------------------------
 function vote(teamName) {
     const username = localStorage.getItem('currentUser') || document.getElementById('username').value;
     
     if (!username) {
-        alert("حدث خطأ في التعرف على الاسم، يرجى إعادة الدخول.");
+        alert("يرجى تسجيل الدخول مرة أخرى.");
         location.reload();
         return;
     }
 
-    // إرسال التصويت إلى الخادم
     socket.emit('submit_vote', { username: username, team: teamName });
     
-    // إخفاء الأزرار وإظهار رسالة النجاح بعد التصويت
     document.getElementById('vote-buttons-container').classList.add('hidden');
     document.getElementById('status-msg').classList.remove('hidden');
 }
 
-// ------------------------------------------------------------------
-// 3. وظيفة إعادة التصويت (reVote)
-// ------------------------------------------------------------------
+// إعادة التصويت
 function reVote() {
-    // إظهار الأزرار مرة أخرى
     document.getElementById('vote-buttons-container').classList.remove('hidden');
-    // إخفاء رسالة النجاح
     document.getElementById('status-msg').classList.add('hidden');
 }
 
 // ------------------------------------------------------------------
-// 4. وظائف لوحة التحكم (الأدمن)
+// 3. وظائف الأدمن وتحديث النتائج
 // ------------------------------------------------------------------
-
 socket.on('update_results', (votes) => {
     updateAdminView(votes);
 });
 
 function updateAdminView(votes) {
     const resultsContainer = document.getElementById('results-container');
-    
-    // قائمة الخيارات المتاحة
     const activityNames = ["One Piece", "HXH", "Bleach", "Demon Slayer"]; 
     
     const shadowColors = {
@@ -99,7 +99,6 @@ function updateAdminView(votes) {
         "Demon Slayer": "shadow-purple"
     };
 
-    // حساب الإجمالي
     let totalVotes = 0;
     for (const key in votes) {
         totalVotes += votes[key].length;
@@ -121,14 +120,13 @@ function updateAdminView(votes) {
 
     allResults.forEach(result => {
         const barColorClass = shadowColors[result.activity] || "shadow-gray";
-        
         const voterNamesHtml = result.voters.map(name => 
             `<span class="voter-name" onclick="deleteVoter('${name}', '${result.activity}')">${name}</span>`
         ).join('');
 
         html += `
             <div class="result-card">
-                <h4 style="margin: 0;">${result.activity} (${result.count} صوت) - ${result.percentage}%</h4>
+                <h4 style="margin: 0;">${result.activity} (${result.count}) - ${result.percentage}%</h4>
                 <div class="bar-container" style="margin-top: 5px;">
                     <div class="vote-bar ${barColorClass}" style="width: ${result.percentage}%; height: 100%; border-radius: inherit; background-color: currentColor; opacity: 0.7;"></div>
                 </div>
@@ -149,7 +147,7 @@ function resetAll() {
 }
 
 function deleteVoter(voterName, team) {
-    if (confirm(`هل أنت متأكد من حذف صوت ${voterName}؟`)) {
+    if (confirm(`حذف صوت ${voterName}؟`)) {
         socket.emit('delete_voter', { voterName, team });
     }
 }

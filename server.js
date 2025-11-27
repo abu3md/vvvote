@@ -1,158 +1,88 @@
-// public/script.js
+// server.js
 
-const socket = io();
+const fs = require('fs');
+const path = require('path');
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 
-// 🔑 كلمة سر الأدمن للدخول (يجب كتابتها في حقل كلمة السر)
-const ADMIN_PASSWORD = 'admin'; 
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// ------------------------------------------------------------------
-// 1. وظيفة تسجيل الدخول (login)
-// ------------------------------------------------------------------
-function login() {
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('admin-password');
-    
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    
-    if (!username) {
-        alert("الرجاء إدخال اسمك أولاً.");
-        return;
+const PORT = process.env.PORT || 3000;
+const LOG_FILE = path.join(__dirname, 'votes_log.csv'); 
+
+const DOWNLOAD_PASSWORD = 'admin';
+
+app.use(express.static('public'));
+
+let votes = {};
+
+// --- 1. دوال التعامل مع ملف CSV ---
+function updateCSV() {
+    let csvContent = 'Time,Username,Team,Status\n';
+    const time = new Date().toISOString().replace('T', ' ').substr(0, 19);
+
+    for (const team in votes) {
+        votes[team].forEach(user => {
+            csvContent += `${time},${user},${team},Active\n`;
+        });
     }
 
-    localStorage.setItem('currentUser', username);
+    fs.writeFileSync(LOG_FILE, csvContent, 'utf8');
+}
 
-    // إخفاء صفحة الدخول
-    document.getElementById('login-page').classList.add('hidden');
-
-    // التحقق من كلمة السر
-    if (password === ADMIN_PASSWORD) {
-        // ✅ دخول كأدمن
-        document.getElementById('admin-page').classList.remove('hidden');
-        document.getElementById('voting-page').classList.add('hidden');
-        
-        // إعداد رابط تحميل السجل للأدمن
-        setupDownloadLink();
+// --- 2. مسار تحميل الملف ---
+app.get('/download-log', (req, res) => {
+    const key = req.query.key;
+    if (key === DOWNLOAD_PASSWORD) {
+        if (fs.existsSync(LOG_FILE)) {
+            res.download(LOG_FILE, 'votes_log.csv');
+        } else {
+            res.send('لم يتم إنشاء ملف سجل بعد (لا توجد أصوات).');
+        }
     } else {
-        // 👤 دخول كمستخدم عادي
-        document.getElementById('voting-page').classList.remove('hidden');
-        document.getElementById('admin-page').classList.add('hidden'); 
-        
-        // إظهار الأزرار للمستخدم (لأنك طلبت أن يكون التصويت مفتوحاً)
-        document.getElementById('vote-buttons-container').classList.remove('hidden');
-        document.getElementById('closed-message').classList.add('hidden');
+        res.status(403).send('كلمة المرور غير صحيحة لتحميل الملف.');
     }
-}
-
-// إضافة زر تحميل السجل في صفحة الأدمن ديناميكياً
-function setupDownloadLink() {
-    const adminHeader = document.querySelector('.admin-header');
-    // التحقق لعدم تكرار الزر
-    if (!document.getElementById('download-btn')) {
-        const downloadBtn = document.createElement('a');
-        downloadBtn.id = 'download-btn';
-        downloadBtn.href = `/download-log?key=${ADMIN_PASSWORD}`;
-        downloadBtn.className = 'glass-button';
-        downloadBtn.style.marginLeft = '10px';
-        downloadBtn.style.fontSize = '0.9rem';
-        downloadBtn.style.textDecoration = 'none';
-        downloadBtn.innerHTML = '📥 تحميل Excel';
-        adminHeader.appendChild(downloadBtn);
-    }
-}
-
-// ------------------------------------------------------------------
-// 2. وظيفة التصويت
-// ------------------------------------------------------------------
-function vote(teamName) {
-    const username = localStorage.getItem('currentUser') || document.getElementById('username').value;
-    
-    if (!username) {
-        alert("يرجى تسجيل الدخول مرة أخرى.");
-        location.reload();
-        return;
-    }
-
-    socket.emit('submit_vote', { username: username, team: teamName });
-    
-    // إخفاء الأزرار وإظهار رسالة النجاح
-    document.getElementById('vote-buttons-container').classList.add('hidden');
-    document.getElementById('status-msg').classList.remove('hidden');
-}
-
-// إعادة التصويت
-function reVote() {
-    document.getElementById('vote-buttons-container').classList.remove('hidden');
-    document.getElementById('status-msg').classList.add('hidden');
-}
-
-// ------------------------------------------------------------------
-// 3. وظائف الأدمن وتحديث النتائج
-// ------------------------------------------------------------------
-socket.on('update_results', (votes) => {
-    updateAdminView(votes);
 });
 
-function updateAdminView(votes) {
-    const resultsContainer = document.getElementById('results-container');
-    const activityNames = ["One Piece", "HXH", "Bleach", "Demon Slayer"]; 
+// --- 3. اتصال Socket.io ---
+io.on('connection', (socket) => {
+    console.log(`User connected: ${socket.id}`);
     
-    const shadowColors = {
-        "One Piece": "shadow-red",
-        "HXH": "shadow-green",
-        "Bleach": "shadow-orange",
-        "Demon Slayer": "shadow-purple"
-    };
+    socket.emit('update_results', votes);
 
-    let totalVotes = 0;
-    for (const key in votes) {
-        totalVotes += votes[key].length;
-    }
-    
-    const totalEl = document.getElementById('total-votes');
-    if(totalEl) totalEl.textContent = `إجمالي الأصوات: ${totalVotes}`;
+    socket.on('submit_vote', (data) => {
+        const { username, team } = data;
 
-    if (!resultsContainer) return;
+        for (const t in votes) {
+            votes[t] = votes[t].filter(u => u !== username);
+        }
 
-    let html = '';
+        if (!votes[team]) votes[team] = [];
+        votes[team].push(username);
 
-    const allResults = activityNames.map(activity => {
-        const voters = votes[activity] || [];
-        const count = voters.length;
-        const percentage = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0;
-        return { activity, count, percentage, voters };
-    }).sort((a, b) => b.count - a.count);
-
-    allResults.forEach(result => {
-        const barColorClass = shadowColors[result.activity] || "shadow-gray";
-        const voterNamesHtml = result.voters.map(name => 
-            `<span class="voter-name" onclick="deleteVoter('${name}', '${result.activity}')">${name}</span>`
-        ).join('');
-
-        html += `
-            <div class="result-card">
-                <h4 style="margin: 0;">${result.activity} (${result.count}) - ${percentage}%</h4>
-                <div class="bar-container" style="margin-top: 5px;">
-                    <div class="vote-bar ${barColorClass}" style="width: ${result.percentage}%; height: 100%; border-radius: inherit; background-color: currentColor; opacity: 0.7;"></div>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.9rem; text-align: left;">
-                    ${voterNamesHtml}
-                </div>
-            </div>
-        `;
+        updateCSV(); 
+        io.emit('update_results', votes); 
     });
 
-    resultsContainer.innerHTML = html;
-}
+    socket.on('reset_all', () => {
+        votes = {};
+        updateCSV(); 
+        io.emit('update_results', votes);
+    });
 
-function resetAll() {
-    if (confirm("هل أنت متأكد من تصفير جميع الأصوات؟")) {
-        socket.emit('reset_all');
-    }
-}
+    socket.on('delete_voter', (data) => {
+        const { voterName, team } = data;
+        if (votes[team]) {
+            votes[team] = votes[team].filter(name => name !== voterName);
+            updateCSV(); 
+            io.emit('update_results', votes);
+        }
+    });
+});
 
-function deleteVoter(voterName, team) {
-    if (confirm(`حذف صوت ${voterName}؟`)) {
-        socket.emit('delete_voter', { voterName, team });
-    }
-}
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

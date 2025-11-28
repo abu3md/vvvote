@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ترتيب الفرق والنقاط</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* تنسيق خاص بإظهار الأسماء في سطر واحد داخل الجدول */
+        .member-list-inline {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .member-list-inline li {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        /* تعديل خاص لعرض البيانات بشكل أفضل على البطاقات */
+        .team-card .team-members {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 10px;
+            line-height: 1.5;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        .team-card .team-members span {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        /* فصل أقسام النقاط */
+        .points-divider {
+            height: 3px;
+            background: linear-gradient(to right, #26102e, #00bcd4, #26102e);
+            margin: 50px 0;
+            border-radius: 50%;
+        }
+        /* تنسيق الخلية النقطية لإبراز الرقم */
+        .score-cell-individual {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #00bcd4; /* لون ازرق سماوي */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="art-gallery-container">
+        
+        <a href="info.html" class="glass-button back-btn" style="float: right;">← العودة للمعلومات</a>
+
+        <h1 class="main-title" style="margin-top: 50px; margin-bottom: 40px;">🥇 ترتيب الفرق النهائية 🥇</h1>
+
+        <div class="gallery-top-three">
+            
+            <div class="art-card rank-2 team-card glass-effect" style="order: 2;">
+                <div class="rank">#2</div>
+                <h3 class="artist-name">نافذين البصيرة</h3>
+                <div class="team-members">
+                    <span>ناناو</span>
+                    <span>وليد</span>
+                    <span>احمد</span>
+                </div>
+                <div class="score" style="color: #9E9E9E;">145 نقطة</div> <div class="team-color" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(158, 158, 158, 0.1); z-index: 1;"></div>
+            </div>
+
+            <div class="art-card rank-1 team-card glass-effect" style="order: 1; transform: scale(1.1); margin-top: -30px;">
+                <div class="rank"><i class="fas fa-crown"></i> #1</div>
+                <h3 class="artist-name">فندرة</h3>
+                <div class="team-members">
+                    <span>جمهر</span>
+                    <span>جيلي</span>
+                    <span>نذير</span>
+                </div>
+                <div class="score" style="color: #2196F3;">170 نقطة</div> <div class="team-color" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(33, 150, 243, 0.1); z-index: 1;"></div>
+            </div>
+
+            <div class="art-card rank-3 team-card glass-effect" style="order: 3;">
+                <div class="rank">#3</div>
+                <h3 class="artist-name">المعاصرين</h3>
+                <div class="team-members">
+                    <span>عزوز</span>
+                    <span>داود</span>
+                    <span>اقاتسو</span>
+                </div>
+                <div class="score" style="color: #2196F3;">115 نقطة</div> <div class="team-color" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(33, 150, 243, 0.1); z-index: 1;"></div>
+            </div>
+
+        </div>
+
+        <div class="art-results-table-container">
+            <h2 style="color: #00bcd4; text-align: center;">الترتيب العام للفرق</h2>
+            <table class="art-results-table">
+                <thead>
+                    <tr>
+                        <th>المركز</th>
+                        <th>اسم الفريق</th>
+                        <th>الأعضاء</th>
+                        <th>مجموع النقاط</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#4</td>
+                        <td style="color: #FFC107;">المهرجين</td>
+                        <td>
+                            <ul class="member-list-inline">
+                                <li>بدر</li>
+                                <li>لاو</li>
+                                <li>خالد</li>
+                            </ul>
+                        </td>
+                        <td class="score-cell" style="color: #FFC107;">115</td> </tr>
+                    <tr>
+                        <td>#5</td>
+                        <td style="color: #FF69B4;">المفكرين</td>
+                        <td>
+                            <ul class="member-list-inline">
+                                <li>عمار</li>
+                                <li>يوكي</li>
+                                <li>مورياتي</li>
+                            </ul>
+                        </td>
+                        <td class="score-cell" style="color: #FF69B4;">60</td> </tr>
+                    <tr>
+                        <td>#6</td>
+                        <td style="color: #FF9800;">سري</td>
+                        <td>
+                            <ul class="member-list-inline">
+                                <li>علي</li>
+                                <li>عامر</li>
+                                <li>انس</li>
+                            </ul>
+                        </td>
+                        <td class="score-cell" style="color: #FF9800;">30</td>
+                    </tr>
+                    <tr>
+                        <td>#7</td>
+                        <td style="color: #F44336;">العناكب</td>
+                        <td>
+                            <ul class="member-list-inline">
+                                <li>الحكومه</li>
+                                <li>يوسف</li>
+                                <li>ريد</li>
+                            </ul>
+                        </td>
+                        <td class="score-cell" style="color: #F44336;">25</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="points-divider"></div>
+
+        <div class="art-results-table-container">
+            <h2 style="color: #00bcd4; text-align: center;">نقاط اللاعبين الفردية</h2>
+            <p style="text-align: center; color: #ccc; font-size: 0.9em;">الترتيب حسب الأولوية المُحددة.</p>
+            <table class="art-results-table">
+                <thead>
+                    <tr>
+                        <th>المركز</th>
+                        <th>اسم اللاعب</th>
+                        <th>النقاط</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>#1</td><td>جيلي</td><td class="score-cell-individual">80</td></tr>
+                    <tr><td>#2</td><td>وليد</td><td class="score-cell-individual">70</td></tr>
+                    <tr><td>#3</td><td>داود</td><td class="score-cell-individual">65</td></tr>
+                    <tr><td>#4</td><td>عمار</td><td class="score-cell-individual">60</td></tr>
+                    <tr><td>#5</td><td>بدر</td><td class="score-cell-individual">55</td></tr>
+                    <tr><td>#6</td><td>جمهر</td><td class="score-cell-individual">50</td></tr>
+                    <tr><td>#7</td><td>اقاتسو</td><td class="score-cell-individual">50</td></tr>
+                    <tr><td>#8</td><td>احمد</td><td class="score-cell-individual">45</td></tr>
+                    <tr><td>#9</td><td>نذير</td><td class="score-cell-individual">40</td></tr>
+                    <tr><td>#10</td><td>وليد</td><td class="score-cell-individual">40</td></tr>
+                    <tr><td>#11</td><td>خالد</td><td class="score-cell-individual">35</td></tr>
+                    <tr><td>#12</td><td>ناناو</td><td class="score-cell-individual">30</td></tr>
+                    <tr><td>#13</td><td>ريد</td><td class="score-cell-individual">30</td></tr>
+                    <tr><td>#14</td><td>لاو</td><td class="score-cell-individual">25</td></tr>
+                    <tr><td>#15</td><td>مورياتي</td><td class="score-cell-individual">15</td></tr>
+                    <tr><td>#16</td><td>علي</td><td class="score-cell-individual">15</td></tr>
+                    <tr><td>#17</td><td>عامر</td><td class="score-cell-individual">15</td></tr>
+                    <tr><td>#18</td><td>يوكي</td><td class="score-cell-individual">0</td></tr>
+                    <tr><td>#19</td><td>يوسف</td><td class="score-cell-individual">0</td></tr>
+                    <tr><td>#20</td><td>الحكومه</td><td class="score-cell-individual">0</td></tr>
+                    <tr><td>#21</td><td>انس</td><td class="score-cell-individual">0</td></tr>
+                    <tr><td>#22</td><td>عزوز</td><td class="score-cell-individual">0</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+
+</body>
+</html>
